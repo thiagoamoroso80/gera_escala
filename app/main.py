@@ -1105,6 +1105,24 @@ async def exportar_dados(username: str = "", password: str = ""):
         headers={"Content-Disposition": "attachment; filename=escalas.xlsx"}
     )
 
+# Adicione no seu main.py uma rota privada para backup
+@app.get("/admin/backup")
+async def fazer_backup(username: str = "", password: str = ""):
+    if username != ADMIN_USER or password != ADMIN_PASS:
+        return RedirectResponse("/")
+    
+    # Código do backup aqui
+    return {"status": "backup criado"}
+
+@app.get("/escalas/publica")
+async def escalas_publicas(request: Request):
+    # Versão pública sem dados sensíveis
+    escalas = sistema.listar_escalas_lar()
+    return templates.TemplateResponse("escalas_publica.html", {
+        "request": request,
+        "escalas": escalas
+    })
+
 # ==================== TEMPLATES HTML ====================
 # Criar diretório frontend se não existir
 TEMPLATES_DIR.mkdir(exist_ok=True)
