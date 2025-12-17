@@ -22,8 +22,12 @@ logger = logging.getLogger(__name__)
 BASE_DIR = Path(__file__).parent.parent
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
-TEMPLATES_DIR = BASE_DIR / "frontend"
+TEMPLATES_DIR = BASE_DIR / "frontend" / "templates"
 STATIC_DIR = BASE_DIR / "frontend" / "static"
+
+# ✅ ADICIONE ESTAS LINHAS PARA CRIAR OS DIRETÓRIOS
+TEMPLATES_DIR.mkdir(exist_ok=True)
+STATIC_DIR.mkdir(exist_ok=True)
 
 # Inicializar app
 app = FastAPI(title="Sistema de Escalas Web", version="3.0")
