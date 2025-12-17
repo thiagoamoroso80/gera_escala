@@ -1,0 +1,492 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0"><i class="bi bi-people me-2"></i>Participantes</h1>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalAdicionar">
+        <i class="bi bi-person-plus me-1"></i> Novo Participante
+    </button>
+</div>
+
+<!-- Notificações -->
+<div id="notificacao" class="alert alert-success alert-dismissible fade" role="alert">
+    <span id="notificacaoTexto"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if participantes %}
+        <div class="table-responsive">
+            <table class="table table-hover" id="tabelaParticipantes">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Telefone</th>
+                        <th>Email</th>
+                        <th>Instituição</th>
+                        <th>Grupo Lar</th>
+                        <th>Grupo Tenda</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="corpoTabela">
+                    {% for p in participantes %}
+                    <tr id="participante-{{ p.id }}">
+                        <td>{{ p.id }}</td>
+                        <td>{{ p.nome }}</td>
+                        <td>{{ p.telefone }}</td>
+                        <td>{{ p.email }}</td>
+                        <td>
+                            {% if p.instituicao == 'lar' %}
+                            <span class="badge bg-success">Lar</span>
+                            {% elif p.instituicao == 'tenda' %}
+                            <span class="badge bg-primary">Tenda</span>
+                            {% else %}
+                            <span class="badge bg-info">Ambos</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if p.grupo_lar %}
+                                {% for grupo in grupos_lar %}
+                                    {% if grupo.id|string == p.grupo_lar %}
+                                    <span class="badge bg-secondary">{{ grupo.nome }}</span>
+                                    {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if p.grupo_tenda %}
+                                {% for grupo in grupos_tenda %}
+                                    {% if grupo.id|string == p.grupo_tenda %}
+                                    <span class="badge bg-secondary">{{ grupo.nome }}</span>
+                                    {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if p.ativo %}
+                            <span class="badge bg-success">Ativo</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Inativo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-warning btn-editar" data-id="{{ p.id }}">
+                                    <i class="bi bi-pencil"></i> Editar
+                                </button>
+                                <button class="btn btn-outline-danger btn-excluir" data-id="{{ p.id }}">
+                                    <i class="bi bi-trash"></i> Excluir
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5" id="semParticipantes">
+            <i class="bi bi-people text-muted" style="font-size: 3rem;"></i>
+            <h4 class="mt-3">Nenhum participante cadastrado</h4>
+            <p class="text-muted">Adicione o primeiro participante para começar</p>
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalAdicionar">
+                <i class="bi bi-person-plus me-1"></i> Adicionar Participante
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal Adicionar -->
+<div class="modal fade" id="modalAdicionar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Adicionar Participante</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formAdicionar" method="post">
+                <input type="hidden" name="username" value="admin">
+                <input type="hidden" name="password" value="{{ request.query_params.get('password', '') }}">
+                
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nome *</label>
+                        <input type="text" class="form-control" id="nome" name="nome" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Telefone</label>
+                            <input type="tel" class="form-control" id="telefone" name="telefone">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Instituição *</label>
+                        <select class="form-select" id="instituicao" name="instituicao" required>
+                            <option value="lar">Lar Otoniel</option>
+                            <option value="tenda">Tenda Pai Oxalá</option>
+                            <option value="ambos">Ambas</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Grupo Lar (opcional)</label>
+                        <select class="form-select" id="grupo_lar" name="grupo_lar">
+                            <option value="">Sem grupo</option>
+                            {% for grupo in grupos_lar %}
+                            <option value="{{ grupo.id }}">{{ grupo.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Grupo Tenda (opcional)</label>
+                        <select class="form-select" id="grupo_tenda" name="grupo_tenda">
+                            <option value="">Sem grupo</option>
+                            {% for grupo in grupos_tenda %}
+                            <option value="{{ grupo.id }}">{{ grupo.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success" id="btnSalvar">
+                        <span class="spinner-border spinner-border-sm me-1" id="spinnerSalvar" style="display: none;"></span>
+                        Salvar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar -->
+<div class="modal fade" id="modalEditar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Participante</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formEditar" method="post">
+                <input type="hidden" name="username" value="admin">
+                <input type="hidden" name="password" value="{{ request.query_params.get('password', '') }}">
+                <input type="hidden" id="editId" name="id">
+                
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nome *</label>
+                        <input type="text" class="form-control" id="editNome" name="nome" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Telefone</label>
+                            <input type="tel" class="form-control" id="editTelefone" name="telefone">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="editEmail" name="email">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Instituição *</label>
+                        <select class="form-select" id="editInstituicao" name="instituicao" required>
+                            <option value="lar">Lar Otoniel</option>
+                            <option value="tenda">Tenda Pai Oxalá</option>
+                            <option value="ambos">Ambas</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Grupo Lar (opcional)</label>
+                        <select class="form-select" id="editGrupoLar" name="grupo_lar">
+                            <option value="">Sem grupo</option>
+                            {% for grupo in grupos_lar %}
+                            <option value="{{ grupo.id }}">{{ grupo.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Grupo Tenda (opcional)</label>
+                        <select class="form-select" id="editGrupoTenda" name="grupo_tenda">
+                            <option value="">Sem grupo</option>
+                            {% for grupo in grupos_tenda %}
+                            <option value="{{ grupo.id }}">{{ grupo.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" id="editAtivo" name="ativo">
+                            <option value="1">Ativo</option>
+                            <option value="0">Inativo</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning" id="btnAtualizar">
+                        <span class="spinner-border spinner-border-sm me-1" id="spinnerAtualizar" style="display: none;"></span>
+                        Atualizar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Função para mostrar notificação
+function mostrarNotificacao(mensagem, tipo = 'success') {
+    const notificacao = document.getElementById('notificacao');
+    const notificacaoTexto = document.getElementById('notificacaoTexto');
+    
+    notificacao.className = `alert alert-${tipo} alert-dismissible fade show`;
+    notificacaoTexto.textContent = mensagem;
+    
+    // Auto-fechar após 5 segundos
+    setTimeout(() => {
+        const bsAlert = new bootstrap.Alert(notificacao);
+        bsAlert.close();
+    }, 5000);
+}
+
+// Função para adicionar linha na tabela
+function adicionarLinhaTabela(participante) {
+    const corpoTabela = document.getElementById('corpoTabela');
+    const semParticipantes = document.getElementById('semParticipantes');
+    
+    // Remover mensagem "sem participantes" se existir
+    if (semParticipantes) {
+        semParticipantes.remove();
+    }
+    
+    // Encontrar grupos para exibição
+    let grupoLarNome = '-';
+    let grupoTendaNome = '-';
+    
+    // Aqui você precisaria ter os grupos disponíveis em JavaScript
+    // Por enquanto, deixaremos genérico
+    if (participante.grupo_lar) {
+        grupoLarNome = `<span class="badge bg-secondary">Grupo ${participante.grupo_lar}</span>`;
+    }
+    
+    if (participante.grupo_tenda) {
+        grupoTendaNome = `<span class="badge bg-secondary">Grupo ${participante.grupo_tenda}</span>`;
+    }
+    
+    // Determinar instituição
+    let instituicaoBadge = '';
+    switch(participante.instituicao) {
+        case 'lar':
+            instituicaoBadge = '<span class="badge bg-success">Lar</span>';
+            break;
+        case 'tenda':
+            instituicaoBadge = '<span class="badge bg-primary">Tenda</span>';
+            break;
+        default:
+            instituicaoBadge = '<span class="badge bg-info">Ambos</span>';
+    }
+    
+    // Status
+    const statusBadge = participante.ativo ? 
+        '<span class="badge bg-success">Ativo</span>' : 
+        '<span class="badge bg-secondary">Inativo</span>';
+    
+    // Nova linha
+    const novaLinha = `
+    <tr id="participante-${participante.id}">
+        <td>${participante.id}</td>
+        <td>${participante.nome}</td>
+        <td>${participante.telefone || ''}</td>
+        <td>${participante.email || ''}</td>
+        <td>${instituicaoBadge}</td>
+        <td>${grupoLarNome}</td>
+        <td>${grupoTendaNome}</td>
+        <td>${statusBadge}</td>
+        <td>
+            <div class="btn-group btn-group-sm">
+                <button class="btn btn-outline-warning btn-editar" data-id="${participante.id}">
+                    <i class="bi bi-pencil"></i> Editar
+                </button>
+                <button class="btn btn-outline-danger btn-excluir" data-id="${participante.id}">
+                    <i class="bi bi-trash"></i> Excluir
+                </button>
+            </div>
+        </td>
+    </tr>`;
+    
+    // Adicionar no início da tabela
+    corpoTabela.insertAdjacentHTML('afterbegin', novaLinha);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // ========== ADICIONAR PARTICIPANTE (AJAX) ==========
+    const formAdicionar = document.getElementById('formAdicionar');
+    const btnSalvar = document.getElementById('btnSalvar');
+    const spinnerSalvar = document.getElementById('spinnerSalvar');
+    const modalAdicionar = document.getElementById('modalAdicionar');
+    
+    formAdicionar.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Desabilitar botão e mostrar spinner
+        btnSalvar.disabled = true;
+        spinnerSalvar.style.display = 'inline-block';
+        
+        const formData = new FormData(this);
+        
+        try {
+            const response = await fetch('/api/participantes', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.sucesso) {
+                // Fechar modal
+                const modal = bootstrap.Modal.getInstance(modalAdicionar);
+                modal.hide();
+                
+                // Mostrar notificação
+                mostrarNotificacao(data.mensagem || 'Participante adicionado com sucesso!');
+                
+                // Limpar formulário
+                formAdicionar.reset();
+                
+                // Adicionar à tabela (simulado - na prática deveria recarregar os dados)
+                // Para simplificar, vamos recarregar a página após 1 segundo
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+                
+            } else {
+                mostrarNotificacao(data.erro || 'Erro ao adicionar participante', 'danger');
+            }
+        } catch (error) {
+            mostrarNotificacao('Erro de conexão: ' + error.message, 'danger');
+        } finally {
+            // Reabilitar botão e esconder spinner
+            btnSalvar.disabled = false;
+            spinnerSalvar.style.display = 'none';
+        }
+    });
+    
+    // ========== EDITAR PARTICIPANTE ==========
+    // Configurar botões de edição
+    document.querySelectorAll('.btn-editar').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const row = document.getElementById(`participante-${id}`);
+            
+            if (row) {
+                document.getElementById('editId').value = id;
+                document.getElementById('editNome').value = row.cells[1].textContent;
+                document.getElementById('editTelefone').value = row.cells[2].textContent;
+                document.getElementById('editEmail').value = row.cells[3].textContent;
+                
+                // Instituição (do badge)
+                const instituicaoBadge = row.cells[4].querySelector('.badge');
+                if (instituicaoBadge) {
+                    if (instituicaoBadge.classList.contains('bg-success')) {
+                        document.getElementById('editInstituicao').value = 'lar';
+                    } else if (instituicaoBadge.classList.contains('bg-primary')) {
+                        document.getElementById('editInstituicao').value = 'tenda';
+                    } else {
+                        document.getElementById('editInstituicao').value = 'ambos';
+                    }
+                }
+                
+                // Status
+                const statusBadge = row.cells[7].querySelector('.badge');
+                if (statusBadge && statusBadge.classList.contains('bg-success')) {
+                    document.getElementById('editAtivo').value = '1';
+                } else {
+                    document.getElementById('editAtivo').value = '0';
+                }
+                
+                // Grupos (seria necessário carregar via API)
+                // Por enquanto deixamos vazio
+                
+                // Mostrar modal
+                const modal = new bootstrap.Modal(document.getElementById('modalEditar'));
+                modal.show();
+            }
+        });
+    });
+    
+    // Formulário de edição
+    const formEditar = document.getElementById('formEditar');
+    const btnAtualizar = document.getElementById('btnAtualizar');
+    const spinnerAtualizar = document.getElementById('spinnerAtualizar');
+    const modalEditar = document.getElementById('modalEditar');
+    
+    formEditar.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        btnAtualizar.disabled = true;
+        spinnerAtualizar.style.display = 'inline-block';
+        
+        const formData = new FormData(this);
+        const id = formData.get('id');
+        
+        try {
+            const response = await fetch(`/api/participantes/atualizar/${id}`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.sucesso) {
+                // Fechar modal
+                const modal = bootstrap.Modal.getInstance(modalEditar);
+                modal.hide();
+                
+                mostrarNotificacao('Participante atualizado com sucesso!');
+                
+                // Recarregar após 1 segundo
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            } else {
+                mostrarNotificacao(data.erro || 'Erro ao atualizar participante', 'danger');
+            }
+        } catch (error) {
+            mostrarNotificacao('Erro de conexão: ' + error.message, 'danger');
+        } finally {
+            btnAtualizar.disabled = false;
+            spinnerAtualizar.style.display = 'none';
+        }
+    });
+    
+    // ========== EXCLUIR PARTICIPANTE ==========
+    document.querySelectorAll('.btn-excluir').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            
+            if (confirm('Tem certeza que deseja excluir este participante?')) {
+                // Redirecionar para exclusão (mantendo compatibilidade)
+                window.location.href = `/participantes/excluir/${id}?username=admin&password={{ request.query_params.get('password', '') }}`;
+            }
+        });
+    });
+    
+    // Limpar formulário quando modal é fechado
+    modalAdicionar.addEventListener('hidden.bs.modal', function() {
+        formAdicionar.reset();
+    });
+});
+</script>
+{% endblock %}

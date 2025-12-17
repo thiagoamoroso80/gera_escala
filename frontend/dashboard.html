@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0"><i class="bi bi-speedometer2 me-2"></i>Dashboard</h1>
+    <div>
+        <span class="badge bg-light text-dark">
+            <i class="bi bi-calendar me-1"></i> {{ estatisticas.ano }}
+        </span>
+    </div>
+</div>
+
+<!-- Estatísticas -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stats-card stats-lar">
+            <h5><i class="bi bi-house-door"></i> Defumações</h5>
+            <h2>{{ estatisticas.defumacoes }}</h2>
+            <small>Ano {{ estatisticas.ano }}</small>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stats-card stats-tenda">
+            <h5><i class="bi bi-stars"></i> Limpezas</h5>
+            <h2>{{ estatisticas.limpezas }}</h2>
+            <small>Ano {{ estatisticas.ano }}</small>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stats-card stats-participantes">
+            <h5><i class="bi bi-people"></i> Participantes</h5>
+            <h2>{{ estatisticas.participantes }}</h2>
+            <small>Cadastrados</small>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stats-card stats-grupos">
+            <h5><i class="bi bi-collection"></i> Grupos</h5>
+            <h2>{{ estatisticas.grupos_lar + estatisticas.grupos_tenda }}</h2>
+            <small>Ativos</small>
+        </div>
+    </div>
+</div>
+
+<!-- Próximas Escalas -->
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-house-door me-2"></i>Próximas Defumações</h5>
+                <a href="/escalas?username=admin&password={{ request.query_params.get('password', '') }}" 
+                   class="btn btn-sm btn-light">Ver todas</a>
+            </div>
+            <div class="card-body">
+                {% if escalas_lar %}
+                    {% for escala in escalas_lar %}
+                    <div class="border-start border-success border-4 ps-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ escala.grupo_nome }}</h6>
+                                <small class="text-muted">Semana {{ escala.semana_ano }}</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-success">{{ escala.data_formatada }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-calendar-x text-muted" style="font-size: 2rem;"></i>
+                        <p class="mt-2 text-muted">Nenhuma defumação agendada</p>
+                        <a href="/gerar?username=admin&password={{ request.query_params.get('password', '') }}" 
+                           class="btn btn-sm btn-success">Gerar Escala</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-stars me-2"></i>Próximas Limpezas</h5>
+                <a href="/escalas?username=admin&password={{ request.query_params.get('password', '') }}" 
+                   class="btn btn-sm btn-light">Ver todas</a>
+            </div>
+            <div class="card-body">
+                {% if escalas_tenda %}
+                    {% for escala in escalas_tenda %}
+                    <div class="border-start border-primary border-4 ps-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ escala.grupo_nome }}</h6>
+                                <small class="text-muted">Limpeza mensal</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-primary">{{ escala.data_formatada }}</span>
+                            </div>
+                        </div>
+                        {% if escala.trabalho_formatado %}
+                        <small class="text-muted">Trabalho: {{ escala.trabalho_formatado }}</small>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-calendar-x text-muted" style="font-size: 2rem;"></i>
+                        <p class="mt-2 text-muted">Nenhuma limpeza agendada</p>
+                        <a href="/gerar?username=admin&password={{ request.query_params.get('password', '') }}" 
+                           class="btn btn-sm btn-primary">Gerar Escala</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ações Rápidas -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning me-2"></i>Ações Rápidas</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="/gerar?username=admin&password={{ request.query_params.get('password', '') }}" 
+                       class="btn btn-success">
+                        <i class="bi bi-magic me-1"></i> Gerar Nova Escala
+                    </a>
+                    <a href="/participantes?username=admin&password={{ request.query_params.get('password', '') }}" 
+                       class="btn btn-primary">
+                        <i class="bi bi-person-plus me-1"></i> Adicionar Participante
+                    </a>
+                    <a href="/grupos?username=admin&password={{ request.query_params.get('password', '') }}" 
+                       class="btn btn-warning">
+                        <i class="bi bi-plus-circle me-1"></i> Gerenciar Grupos
+                    </a>
+                    <a href="/exportar?username=admin&password={{ request.query_params.get('password', '') }}" 
+                       class="btn btn-info">
+                        <i class="bi bi-download me-1"></i> Exportar Dados
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

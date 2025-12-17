@@ -1,0 +1,8 @@
+{
+  "ano_vigente": 2025,
+  "regras": {
+    "lar": "sabado_ou_domingo_conforme_grupo",
+    "tenda": "apos_ultima_sexta_mes",
+    "impedimento": "mesmo_grupo_nao_pode_duas_escalas_mesmo_fds"
+  }
+}

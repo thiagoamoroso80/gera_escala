@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0"><i class="bi bi-calendar3 me-2"></i>Escalas</h1>
+    <a href="/gerar?username=admin&password={{ request.query_params.get('password', '') }}" class="btn btn-success">
+        <i class="bi bi-magic me-1"></i> Gerar Nova Escala
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-house-door me-2"></i>Defumações - Lar Otoniel</h5>
+            </div>
+            <div class="card-body">
+                {% if escalas_lar %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Grupo</th>
+                                <th>Semana</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for escala in escalas_lar %}
+                            <tr>
+                                <td>{{ escala.data_formatada }}</td>
+                                <td>{{ escala.grupo_nome }}</td>
+                                <td>Semana {{ escala.semana_ano }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if escala.status == 'confirmado' else 'warning' }}">
+                                        {{ escala.status|title }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-calendar-x text-muted" style="font-size: 2rem;"></i>
+                    <p class="mt-2 text-muted">Nenhuma defumação agendada</p>
+                    <a href="/gerar?username=admin&password={{ request.query_params.get('password', '') }}" 
+                       class="btn btn-sm btn-success">Gerar Escala</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-stars me-2"></i>Limpezas - Tenda Pai Oxalá</h5>
+            </div>
+            <div class="card-body">
+                {% if escalas_tenda %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Grupo</th>
+                                <th>Trabalho</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for escala in escalas_tenda %}
+                            <tr>
+                                <td>{{ escala.data_formatada }}</td>
+                                <td>{{ escala.grupo_nome }}</td>
+                                <td>
+                                    {% if escala.trabalho_formatado %}
+                                    {{ escala.trabalho_formatado }}
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if escala.status == 'confirmado' else 'warning' }}">
+                                        {{ escala.status|title }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-calendar-x text-muted" style="font-size: 2rem;"></i>
+                    <p class="mt-2 text-muted">Nenhuma limpeza agendada</p>
+                    <a href="/gerar?username=admin&password={{ request.query_params.get('password', '') }}" 
+                       class="btn btn-sm btn-primary">Gerar Escala</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

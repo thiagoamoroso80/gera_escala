@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="h3 mb-0"><i class="bi bi-magic me-2"></i>Gerar Nova Escala</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header bg-warning text-white">
+                <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Atenção</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <h6><i class="bi bi-info-circle me-2"></i>Importante:</h6>
+                    <ul class="mb-0">
+                        <li>Esta ação irá <strong>substituir</strong> todas as escalas do ano selecionado</li>
+                        <li>Certifique-se de que todos os grupos estão cadastrados corretamente</li>
+                        <li>A geração segue as regras automáticas do sistema</li>
+                    </ul>
+                </div>
+                
+                <form id="formGerar" method="post" action="/api/gerar">
+                    <input type="hidden" name="username" value="admin">
+                    <input type="hidden" name="password" value="{{ request.query_params.get('password', '') }}">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Ano para Gerar Escala</label>
+                        <select class="form-select" name="ano" required>
+                            {% for ano in range(ano_atual-1, ano_atual+3) %}
+                            <option value="{{ ano }}" {% if ano == ano_atual %}selected{% endif %}>
+                                {{ ano }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="button" class="btn btn-secondary" onclick="history.back()">
+                            <i class="bi bi-arrow-left me-1"></i> Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-success" id="btnGerar">
+                            <i class="bi bi-magic me-1"></i> Gerar Escala
+                        </button>
+                    </div>
+                </form>
+                
+                <div id="resultado" class="mt-4" style="display: none;">
+                    <div class="alert alert-success">
+                        <h6><i class="bi bi-check-circle me-2"></i>Escala gerada com sucesso!</h6>
+                        <p id="mensagem"></p>
+                        <div class="mt-3">
+                            <a href="/escalas?username=admin&password={{ request.query_params.get('password', '') }}" 
+                               class="btn btn-sm btn-primary">
+                                <i class="bi bi-calendar3 me-1"></i> Ver Escalas
+                            </a>
+                            <a href="/dashboard?username=admin&password={{ request.query_params.get('password', '') }}" 
+                               class="btn btn-sm btn-success">
+                                <i class="bi bi-speedometer2 me-1"></i> Voltar ao Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="erro" class="mt-4" style="display: none;">
+                    <div class="alert alert-danger">
+                        <h6><i class="bi bi-x-circle me-2"></i>Erro ao gerar escala</h6>
+                        <p id="erroMensagem"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('formGerar');
+    const btnGerar = document.getElementById('btnGerar');
+    const resultado = document.getElementById('resultado');
+    const erro = document.getElementById('erro');
+    
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        btnGerar.disabled = true;
+        btnGerar.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Gerando...';
+        
+        const formData = new FormData(form);
+        
+        try {
+            const response = await fetch('/api/gerar', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.sucesso) {
+                document.getElementById('mensagem').textContent = 
+                    `Foram geradas ${data.defumacoes} defumações e ${data.limpezas} limpezas para o ano ${data.ano}.`;
+                resultado.style.display = 'block';
+                erro.style.display = 'none';
+                form.style.display = 'none';
+            } else {
+                document.getElementById('erroMensagem').textContent = data.erro || 'Erro desconhecido';
+                resultado.style.display = 'none';
+                erro.style.display = 'block';
+                btnGerar.disabled = false;
+                btnGerar.innerHTML = '<i class="bi bi-magic me-1"></i> Gerar Escala';
+            }
+        } catch (error) {
+            document.getElementById('erroMensagem').textContent = 'Erro de conexão: ' + error.message;
+            resultado.style.display = 'none';
+            erro.style.display = 'block';
+            btnGerar.disabled = false;
+            btnGerar.innerHTML = '<i class="bi bi-magic me-1"></i> Gerar Escala';
+        }
+    });
+});
+</script>
+{% endblock %}
