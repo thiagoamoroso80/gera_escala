@@ -19,6 +19,8 @@
             background: white;
             min-height: calc(100vh - 56px);
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            position: relative;
+            padding-bottom: 80px; /* Espaço para o botão de trocar usuário */
         }
         .sidebar .nav-link {
             color: #495057;
@@ -56,18 +58,39 @@
         .stats-participantes { background: linear-gradient(135deg, #ffc107, #ff9800); }
         .stats-grupos { background: linear-gradient(135deg, #17a2b8, #00bcd4); }
         .btn-excluir:hover { background: #dc3545; color: white; }
+        .user-badge {
+            background: #e9ecef;
+            border-radius: 20px;
+            padding: 5px 15px;
+            font-size: 0.9rem;
+        }
+        .user-badge.admin {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .user-badge.viewer {
+            background: #cce5ff;
+            color: #004085;
+            border: 1px solid #b8daff;
+        }
     </style>
 </head>
 <body>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/dashboard?username=admin&password={{ request.query_params.get('password', '') }}">
+            <a class="navbar-brand" href="/dashboard?username={{ request.query_params.get('username', '') }}&password={{ request.query_params.get('password', '') }}">
                 <i class="bi bi-calendar-week me-2"></i> Sistema de Escalas
             </a>
             <div class="navbar-nav ms-auto">
+                <!-- Exibe o tipo de usuário -->
                 <span class="nav-link text-light">
-                    <i class="bi bi-person-circle me-1"></i> Admin
+                    {% if is_admin %}
+                        <i class="bi bi-shield-lock me-1"></i> Administrador
+                    {% else %}
+                        <i class="bi bi-eye me-1"></i> Visualizador
+                    {% endif %}
                 </span>
                 <a href="/" class="nav-link text-light">
                     <i class="bi bi-box-arrow-right"></i> Sair
@@ -81,39 +104,83 @@
             <!-- Sidebar -->
             <div class="col-md-2 p-0 sidebar">
                 <div class="pt-3">
+                    <!-- Cabeçalho do usuário -->
+                    <div class="px-3 mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="me-2">
+                                {% if is_admin %}
+                                <i class="bi bi-shield-lock text-success" style="font-size: 1.5rem;"></i>
+                                {% else %}
+                                <i class="bi bi-eye text-primary" style="font-size: 1.5rem;"></i>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <small class="text-muted d-block">Conectado como</small>
+                                <strong>{{ user_name }}</strong>
+                            </div>
+                        </div>
+                        
+                        <!-- Badge do tipo de usuário -->
+                        <div class="mb-3">
+                            {% if is_admin %}
+                            <span class="user-badge admin">
+                                <i class="bi bi-shield-check me-1"></i> Modo Administrador
+                            </span>
+                            {% else %}
+                            <span class="user-badge viewer">
+                                <i class="bi bi-eye me-1"></i> Modo Visualização
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <hr class="my-2">
+                    </div>
+                    
                     <h6 class="px-3 text-muted mb-3">MENU PRINCIPAL</h6>
                     
-                    <a href="/dashboard?username=admin&password={{ request.query_params.get('password', '') }}" 
+                    <!-- Menu comum a todos -->
+                    <a href="/dashboard?username={{ request.query_params.get('username', '') }}&password={{ request.query_params.get('password', '') }}" 
                        class="nav-link d-block {% if 'dashboard' in request.url.path %}active{% endif %}">
                         <i class="bi bi-speedometer2 me-2"></i> Dashboard
                     </a>
                     
-                    <a href="/participantes?username=admin&password={{ request.query_params.get('password', '') }}" 
-                       class="nav-link d-block {% if 'participantes' in request.url.path %}active{% endif %}">
-                        <i class="bi bi-people me-2"></i> Participantes
-                    </a>
-                    
-                    <a href="/grupos?username=admin&password={{ request.query_params.get('password', '') }}" 
-                       class="nav-link d-block {% if 'grupos' in request.url.path %}active{% endif %}">
-                        <i class="bi bi-collection me-2"></i> Grupos
-                    </a>
-                    
-                    <a href="/escalas?username=admin&password={{ request.query_params.get('password', '') }}" 
+                    <a href="/escalas?username={{ request.query_params.get('username', '') }}&password={{ request.query_params.get('password', '') }}" 
                        class="nav-link d-block {% if 'escalas' in request.url.path and 'gerar' not in request.url.path %}active{% endif %}">
                         <i class="bi bi-calendar3 me-2"></i> Escalas
                     </a>
                     
+                    <!-- Apenas para administradores -->
+                    {% if is_admin %}
                     <hr class="mx-3 my-2">
+                    <h6 class="px-3 text-muted mb-3">ADMINISTRAÇÃO</h6>
                     
-                    <a href="/gerar?username=admin&password={{ request.query_params.get('password', '') }}" 
+                    <a href="/participantes?username={{ request.query_params.get('username', '') }}&password={{ request.query_params.get('password', '') }}" 
+                       class="nav-link d-block {% if 'participantes' in request.url.path %}active{% endif %}">
+                        <i class="bi bi-people me-2"></i> Participantes
+                    </a>
+                    
+                    <a href="/grupos?username={{ request.query_params.get('username', '') }}&password={{ request.query_params.get('password', '') }}" 
+                       class="nav-link d-block {% if 'grupos' in request.url.path %}active{% endif %}">
+                        <i class="bi bi-collection me-2"></i> Grupos
+                    </a>
+                    
+                    <a href="/gerar?username={{ request.query_params.get('username', '') }}&password={{ request.query_params.get('password', '') }}" 
                        class="nav-link d-block {% if 'gerar' in request.url.path %}active{% endif %}">
                         <i class="bi bi-magic me-2"></i> Gerar Escala
                     </a>
                     
-                    <a href="/exportar?username=admin&password={{ request.query_params.get('password', '') }}" 
+                    <a href="/exportar?username={{ request.query_params.get('username', '') }}&password={{ request.query_params.get('password', '') }}" 
                        class="nav-link d-block">
                         <i class="bi bi-download me-2"></i> Exportar
                     </a>
+                    {% endif %}
+                    
+                    <!-- Botão para trocar usuário (fixo no rodapé) -->
+                    <div class="position-absolute bottom-0 start-0 end-0 p-3 border-top bg-white">
+                        <a href="/" class="btn btn-sm btn-outline-secondary w-100">
+                            <i class="bi bi-arrow-repeat me-1"></i> Trocar Usuário
+                        </a>
+                    </div>
                 </div>
             </div>
             

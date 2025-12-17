@@ -34,22 +34,60 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 # Sistema de autenticação simples
 security = HTTPBasic()
-ADMIN_USER = "admin"
-ADMIN_PASS = os.getenv("ADMIN_PASSWORD", "escala123", "Escala@123")  # Usa variável de ambiente
+ADMIN_USER = os.getenv("ADMIN_USER", "admin")
+ADMIN_PASS = os.getenv("ADMIN_PASSWORD", "Escala@123")  # Usa variável de ambiente
 #ADMIN_PASS = "escala123"  # Mude isso em produção!
 
-def verificar_credenciais(credentials: HTTPBasicCredentials = Depends(security)):
-    """Verifica credenciais básicas"""
-    usuario_correto = secrets.compare_digest(credentials.username, ADMIN_USER)
-    senha_correto = secrets.compare_digest(credentials.password, ADMIN_PASS)
+# Usuário visualizador padrão (pode ser alterado via variáveis de ambiente)
+VIEWER_USER = os.getenv("VIEWER_USER", "visualizador")
+VIEWER_PASS = os.getenv("VIEWER_PASSWORD", "visual123")
+
+def verificar_credenciais_completas(credentials: HTTPBasicCredentials = Depends(security)):
+    """Verifica credenciais para admin ou visualizador"""
     
-    if not (usuario_correto and senha_correto):
+    # Verificar se é admin
+    usuario_admin_correto = secrets.compare_digest(credentials.username, ADMIN_USER)
+    senha_admin_correto = secrets.compare_digest(credentials.password, ADMIN_PASS)
+    
+    # Verificar se é visualizador
+    usuario_viewer_correto = secrets.compare_digest(credentials.username, VIEWER_USER)
+    senha_viewer_correto = secrets.compare_digest(credentials.password, VIEWER_PASS)
+    
+    if not (usuario_admin_correto and senha_admin_correto) and not (usuario_viewer_correto and senha_viewer_correto):
         raise HTTPException(
             status_code=401,
             detail="Credenciais inválidas",
             headers={"WWW-Authenticate": "Basic"},
         )
-    return credentials.username
+    
+    # Retorna tipo de usuário e nome
+    if usuario_admin_correto and senha_admin_correto:
+        return {"tipo": "admin", "usuario": credentials.username}
+    else:
+        return {"tipo": "viewer", "usuario": credentials.username}
+
+# ==================== DEPENDÊNCIAS PARA PERMISSÕES ====================
+def verificar_admin(credenciais: dict = Depends(verificar_credenciais_completas)):
+    """Verifica se o usuário é administrador"""
+    if credenciais["tipo"] != "admin":
+        raise HTTPException(
+            status_code=403,
+            detail="Acesso negado. Apenas administradores podem acessar esta funcionalidade."
+        )
+    return credenciais
+
+def verificar_viewer(credenciais: dict = Depends(verificar_credenciais_completas)):
+    """Verifica se o usuário é visualizador"""
+    if credenciais["tipo"] != "viewer":
+        raise HTTPException(
+            status_code=403,
+            detail="Acesso negado. Esta funcionalidade é apenas para visualizadores."
+        )
+    return credenciais
+
+def qualquer_usuario(credenciais: dict = Depends(verificar_credenciais_completas)):
+    """Permite acesso tanto para admin quanto viewer"""
+    return credenciais
 
 # ==================== BANCO DE DADOS SQLite ====================
 def init_database():
@@ -710,105 +748,56 @@ sistema = SistemaEscalasWeb()
 
 # ==================== ROTAS WEB ====================
 @app.get("/", response_class=HTMLResponse)
-async def pagina_inicial(request: Request):
-    """Página inicial (login)"""
-    html = """
-    <!DOCTYPE html>
-    <html lang="pt-BR">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Sistema de Escalas - Login</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <style>
-            body {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                height: 100vh;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            .login-card {
-                background: white;
-                border-radius: 20px;
-                padding: 40px;
-                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-                width: 100%;
-                max-width: 400px;
-            }
-            .logo {
-                text-align: center;
-                margin-bottom: 30px;
-            }
-            .logo i {
-                font-size: 3rem;
-                color: #667eea;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="login-card">
-            <div class="logo">
-                <i class="bi bi-calendar-week"></i>
-                <h2 class="mt-3">Sistema de Escalas</h2>
-                <p class="text-muted">Lar Otoniel & Tenda Pai Oxalá</p>
-            </div>
-            
-            <form action="/dashboard" method="get">
-                <div class="mb-3">
-                    <label class="form-label">Usuário</label>
-                    <input type="text" class="form-control" name="username" value="admin" readonly>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Senha</label>
-                    <input type="password" class="form-control" name="password" required>
-                    <div class="form-text">Use a senha configurada</div>
-                </div>
-                <button type="submit" class="btn btn-primary w-100">
-                    <i class="bi bi-box-arrow-in-right"></i> Entrar
-                </button>
-            </form>
-            
-            <div class="mt-4 text-center">
-                <small class="text-muted">
-                    Sistema web para gerenciamento de escalas
-                </small>
-            </div>
-        </div>
-        
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
-    </body>
-    </html>
-    """
-    return HTMLResponse(content=html)
+async def pagina_login(request: Request):
+    """Página de login com escolha de perfil"""
+    return templates.TemplateResponse("login.html", {"request": request})
 
-@app.get("/dashboard", response_class=HTMLResponse)
-async def dashboard(request: Request, username: str = "", password: str = ""):
+@app.get("/dashboard")
+async def dashboard(
+    request: Request, 
+    username: str = "", 
+    password: str = ""
+):
     """Dashboard principal"""
-    # Verificar credenciais básicas
-    if username != ADMIN_USER or password != ADMIN_PASS:
-        return RedirectResponse("/")
     
+    # Verificar quem é o usuário
+    if username == ADMIN_USER and password == ADMIN_PASS:
+        is_admin = True
+        user_name = "Administrador"
+    elif username == VIEWER_USER and password == VIEWER_PASS:
+        is_admin = False
+        user_name = "Visualizador"
+    else:
+        return RedirectResponse("/")  # Volta para login se credenciais inválidas
+    
+    # Obter dados (restrito para visualizadores)
     estatisticas = sistema.obter_estatisticas()
-    escalas_lar = sistema.listar_escalas_lar(limit=5)
-    escalas_tenda = sistema.listar_escalas_tenda(limit=5)
+    
+    if is_admin:
+        escalas_lar = sistema.listar_escalas_lar(limit=10)
+        escalas_tenda = sistema.listar_escalas_tenda(limit=10)
+    else:
+        escalas_lar = sistema.listar_escalas_lar(limit=5)
+        escalas_tenda = sistema.listar_escalas_tenda(limit=5)
     
     context = {
         "request": request,
         "estatisticas": estatisticas,
         "escalas_lar": escalas_lar,
-        "escalas_tenda": escalas_tenda
+        "escalas_tenda": escalas_tenda,
+        "is_admin": is_admin,          # IMPORTANTE!
+        "user_name": user_name,        # IMPORTANTE!
     }
     
     return templates.TemplateResponse("dashboard.html", context)
 
+# Rotas apenas para administradores
 @app.get("/participantes", response_class=HTMLResponse)
-async def participantes(request: Request, username: str = "", password: str = ""):
+async def participantes(
+    request: Request, 
+    credenciais: dict = Depends(verificar_admin)  # Só admin acessa
+):
     """Página de participantes"""
-    if username != ADMIN_USER or password != ADMIN_PASS:
-        return RedirectResponse("/")
-    
     lista_participantes = sistema.listar_participantes()
     grupos_lar = sistema.listar_grupos_lar()
     grupos_tenda = sistema.listar_grupos_tenda()
@@ -817,7 +806,9 @@ async def participantes(request: Request, username: str = "", password: str = ""
         "request": request,
         "participantes": lista_participantes,
         "grupos_lar": grupos_lar,
-        "grupos_tenda": grupos_tenda
+        "grupos_tenda": grupos_tenda,
+        "is_admin": True,
+        "user_name": "Administrador"
     }
     
     return templates.TemplateResponse("participantes.html", context)
@@ -901,18 +892,20 @@ async def excluir_participante(id: int, username: str = "", password: str = ""):
     return RedirectResponse(f"/participantes?username={username}&password={password}")
 
 @app.get("/grupos", response_class=HTMLResponse)
-async def grupos(request: Request, username: str = "", password: str = ""):
+async def grupos(
+    request: Request, 
+    credenciais: dict = Depends(verificar_admin)  # Só admin acessa
+):
     """Página de grupos"""
-    if username != ADMIN_USER or password != ADMIN_PASS:
-        return RedirectResponse("/")
-    
     grupos_lar = sistema.listar_grupos_lar()
     grupos_tenda = sistema.listar_grupos_tenda()
     
     context = {
         "request": request,
         "grupos_lar": grupos_lar,
-        "grupos_tenda": grupos_tenda
+        "grupos_tenda": grupos_tenda,
+        "is_admin": True,
+        "user_name": "Administrador"
     }
     
     return templates.TemplateResponse("grupos.html", context)
@@ -959,49 +952,49 @@ async def adicionar_grupo_tenda(
     sistema.adicionar_grupo_tenda(dados)
     return RedirectResponse(f"/grupos?username={username}&password={password}")
 
+# Rotas acessíveis por ambos (viewer e admin)
 @app.get("/escalas", response_class=HTMLResponse)
-async def escalas(request: Request, username: str = "", password: str = ""):
-    """Página de escalas"""
-    if username != ADMIN_USER or password != ADMIN_PASS:
-        return RedirectResponse("/")
-    
+async def escalas(
+    request: Request, 
+    credenciais: dict = Depends(qualquer_usuario)  # Ambos acessam
+):
+    """Página de escalas - acessível por todos"""
     escalas_lar = sistema.listar_escalas_lar()
     escalas_tenda = sistema.listar_escalas_tenda()
     
     context = {
         "request": request,
         "escalas_lar": escalas_lar,
-        "escalas_tenda": escalas_tenda
+        "escalas_tenda": escalas_tenda,
+        "is_admin": credenciais["tipo"] == "admin",
+        "user_name": "Administrador" if credenciais["tipo"] == "admin" else "Visualizador"
     }
     
     return templates.TemplateResponse("escalas.html", context)
 
 @app.get("/gerar", response_class=HTMLResponse)
-async def gerar_escala(request: Request, username: str = "", password: str = ""):
+async def gerar_escala(
+    request: Request, 
+    credenciais: dict = Depends(verificar_admin)  # Só admin acessa
+):
     """Página para gerar escala"""
-    if username != ADMIN_USER or password != ADMIN_PASS:
-        return RedirectResponse("/")
-    
     estatisticas = sistema.obter_estatisticas()
     
     context = {
         "request": request,
-        "ano_atual": estatisticas['ano']
+        "ano_atual": estatisticas['ano'],
+        "is_admin": True,
+        "user_name": "Administrador"
     }
     
     return templates.TemplateResponse("gerar.html", context)
 
 @app.post("/api/gerar")
 async def api_gerar_escala(
-    request: Request,
-    username: str = Form(""),
-    password: str = Form(""),
-    ano: int = Form(...)
+    ano: int = Form(...),
+    credenciais: dict = Depends(verificar_admin)
 ):
-    """API para gerar escala"""
-    if username != ADMIN_USER or password != ADMIN_PASS:
-        return RedirectResponse("/")
-    
+    """API para gerar escala - apenas admin"""
     try:
         resultado = sistema.gerar_escala_anual(ano)
         return JSONResponse(resultado)
@@ -1074,37 +1067,43 @@ async def atualizar_participante_api(
         return JSONResponse({"sucesso": False, "erro": str(e)})
 
 @app.get("/exportar")
-async def exportar_dados(username: str = "", password: str = ""):
-    """Exporta dados para Excel"""
-    if username != ADMIN_USER or password != ADMIN_PASS:
-        return RedirectResponse("/")
+async def exportar_dados(credenciais: dict = Depends(verificar_admin)):
+    """Exporta dados para Excel - apenas admin pode exportar"""
+    try:
+        # Coletar dados
+        participantes = sistema.listar_participantes()
+        grupos_lar = sistema.listar_grupos_lar()
+        grupos_tenda = sistema.listar_grupos_tenda()
+        escalas_lar = sistema.listar_escalas_lar()
+        escalas_tenda = sistema.listar_escalas_tenda()
+        
+        # Criar Excel em memória
+        from io import BytesIO
+        import pandas as pd
+        
+        output = BytesIO()
+        
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            pd.DataFrame(participantes).to_excel(writer, sheet_name='Participantes', index=False)
+            pd.DataFrame(grupos_lar).to_excel(writer, sheet_name='Grupos Lar', index=False)
+            pd.DataFrame(grupos_tenda).to_excel(writer, sheet_name='Grupos Tenda', index=False)
+            pd.DataFrame(escalas_lar).to_excel(writer, sheet_name='Escala Lar', index=False)
+            pd.DataFrame(escalas_tenda).to_excel(writer, sheet_name='Escala Tenda', index=False)
+        
+        output.seek(0)
+        
+        return Response(
+            content=output.getvalue(),
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": "attachment; filename=escalas.xlsx"}
+        )
+    except Exception as e:
+        logger.error(f"Erro ao exportar dados: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"sucesso": False, "erro": f"Erro ao gerar arquivo Excel: {str(e)}"}
+        )
     
-    # Coletar dados
-    participantes = sistema.listar_participantes()
-    grupos_lar = sistema.listar_grupos_lar()
-    grupos_tenda = sistema.listar_grupos_tenda()
-    escalas_lar = sistema.listar_escalas_lar()
-    escalas_tenda = sistema.listar_escalas_tenda()
-    
-    # Criar Excel em memória
-    from io import BytesIO
-    output = BytesIO()
-    
-    with pd.ExcelWriter(output, engine='openpyxl') as writer:
-        pd.DataFrame(participantes).to_excel(writer, sheet_name='Participantes', index=False)
-        pd.DataFrame(grupos_lar).to_excel(writer, sheet_name='Grupos Lar', index=False)
-        pd.DataFrame(grupos_tenda).to_excel(writer, sheet_name='Grupos Tenda', index=False)
-        pd.DataFrame(escalas_lar).to_excel(writer, sheet_name='Escala Lar', index=False)
-        pd.DataFrame(escalas_tenda).to_excel(writer, sheet_name='Escala Tenda', index=False)
-    
-    output.seek(0)
-    
-    return Response(
-        content=output.getvalue(),
-        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": "attachment; filename=escalas.xlsx"}
-    )
-
 # Adicione no seu main.py uma rota privada para backup
 @app.get("/admin/backup")
 async def fazer_backup(username: str = "", password: str = ""):
@@ -1120,7 +1119,9 @@ async def escalas_publicas(request: Request):
     escalas = sistema.listar_escalas_lar()
     return templates.TemplateResponse("escalas_publica.html", {
         "request": request,
-        "escalas": escalas
+        "escalas": escalas,
+        "is_admin": False,          # ← ADICIONAR (sempre False pois é pública)
+        "user_name": "Visitante"    # ← ADICIONAR
     })
 
 # ==================== TEMPLATES HTML ====================

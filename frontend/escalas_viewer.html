@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0"><i class="bi bi-calendar3 me-2"></i>Escalas</h1>
+    <div>
+        <span class="badge bg-info">
+            <i class="bi bi-eye me-1"></i> Modo Visualização
+        </span>
+    </div>
+</div>
+
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    Você está no modo <strong>visualizador</strong>. Para editar dados, faça login como administrador.
+</div>
+
+<!-- Conteúdo idêntico ao escalas.html normal -->
+<!-- ... (mesmo conteúdo de escalas.html, sem botões de ação) ... -->
+
+{% endblock %}
