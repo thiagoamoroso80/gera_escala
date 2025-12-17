@@ -35,7 +35,8 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 # Sistema de autenticação simples
 security = HTTPBasic()
 ADMIN_USER = "admin"
-ADMIN_PASS = "escala123"  # Mude isso em produção!
+ADMIN_PASS = os.getenv("ADMIN_PASSWORD", "escala123", "Escala@123")  # Usa variável de ambiente
+#ADMIN_PASS = "escala123"  # Mude isso em produção!
 
 def verificar_credenciais(credentials: HTTPBasicCredentials = Depends(security)):
     """Verifica credenciais básicas"""
