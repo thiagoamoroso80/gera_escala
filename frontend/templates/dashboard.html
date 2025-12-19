@@ -1,152 +1,522 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3 mb-0"><i class="bi bi-speedometer2 me-2"></i>Dashboard</h1>
-    <div>
-        <span class="badge bg-light text-dark">
-            <i class="bi bi-calendar me-1"></i> {{ estatisticas.ano }}
-        </span>
+<div class="container-fluid px-0">
+    <!-- Cabeçalho Responsivo -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
+        <div class="mb-3 mb-md-0">
+            <h1 class="h3 mb-1">
+                <i class="bi bi-speedometer2 me-2"></i>Dashboard
+            </h1>
+            <p class="text-muted mb-0">
+                Visão geral do sistema - Ano {{ estatisticas.ano }}
+            </p>
+        </div>
+        
+        <div class="d-flex align-items-center">
+            <span class="badge bg-light text-dark fs-6">
+                <i class="bi bi-calendar me-1"></i> {{ estatisticas.ano }}
+            </span>
+        </div>
     </div>
-</div>
 
-<!-- Estatísticas -->
-<div class="row mb-4">
-    <div class="col-xl-3 col-md-6 mb-3">
-        <div class="stats-card stats-lar">
-            <h5><i class="bi bi-house-door"></i> Defumações</h5>
-            <h2>{{ estatisticas.defumacoes }}</h2>
-            <small>Ano {{ estatisticas.ano }}</small>
-        </div>
-    </div>
-    
-    <div class="col-xl-3 col-md-6 mb-3">
-        <div class="stats-card stats-tenda">
-            <h5><i class="bi bi-stars"></i> Limpezas</h5>
-            <h2>{{ estatisticas.limpezas }}</h2>
-            <small>Ano {{ estatisticas.ano }}</small>
-        </div>
-    </div>
-    
-    <div class="col-xl-3 col-md-6 mb-3">
-        <div class="stats-card stats-participantes">
-            <h5><i class="bi bi-people"></i> Participantes</h5>
-            <h2>{{ estatisticas.participantes }}</h2>
-            <small>Cadastrados</small>
-        </div>
-    </div>
-    
-    <div class="col-xl-3 col-md-6 mb-3">
-        <div class="stats-card stats-grupos">
-            <h5><i class="bi bi-collection"></i> Grupos</h5>
-            <h2>{{ estatisticas.grupos_lar + estatisticas.grupos_tenda }}</h2>
-            <small>Ativos</small>
-        </div>
-    </div>
-</div>
-
-<!-- Próximas Escalas -->
-<div class="row">
-    <div class="col-lg-6 mb-4">
-        <div class="card">
-            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-house-door me-2"></i>Próximas Defumações</h5>
-                <a href="/escalas?username=admin&password={{ request.query_params.get('password', '') }}" 
-                   class="btn btn-sm btn-light">Ver todas</a>
+    <!-- Cards de Estatísticas Responsivos -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-sm-6 col-md-3">
+            <div class="stats-card stats-lar h-100">
+                <div class="d-flex flex-column justify-content-between h-100">
+                    <div>
+                        <h5 class="mb-2">
+                            <i class="bi bi-house-door"></i> 
+                            <span class="d-none d-md-inline">Defumações</span>
+                            <span class="d-inline d-md-none">Defum.</span>
+                        </h5>
+                        <h2 class="display-6 fw-bold mb-1">{{ estatisticas.defumacoes }}</h2>
+                    </div>
+                    <div>
+                        <small class="opacity-75 d-block">Ano {{ estatisticas.ano }}</small>
+                        <small class="opacity-75">Lar Otoniel</small>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                {% if escalas_lar %}
-                    {% for escala in escalas_lar %}
-                    <div class="border-start border-success border-4 ps-3 mb-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="mb-1">{{ escala.grupo_nome }}</h6>
-                                <small class="text-muted">Semana {{ escala.semana_ano }}</small>
-                            </div>
-                            <div class="text-end">
-                                <span class="badge bg-success">{{ escala.data_formatada }}</span>
+        </div>
+        
+        <div class="col-6 col-sm-6 col-md-3">
+            <div class="stats-card stats-tenda h-100">
+                <div class="d-flex flex-column justify-content-between h-100">
+                    <div>
+                        <h5 class="mb-2">
+                            <i class="bi bi-stars"></i>
+                            <span class="d-none d-md-inline">Limpezas</span>
+                            <span class="d-inline d-md-none">Limpezas</span>
+                        </h5>
+                        <h2 class="display-6 fw-bold mb-1">{{ estatisticas.limpezas }}</h2>
+                    </div>
+                    <div>
+                        <small class="opacity-75 d-block">Ano {{ estatisticas.ano }}</small>
+                        <small class="opacity-75">Tenda Pai Oxalá</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-6 col-sm-6 col-md-3">
+            <div class="stats-card stats-participantes h-100">
+                <div class="d-flex flex-column justify-content-between h-100">
+                    <div>
+                        <h5 class="mb-2">
+                            <i class="bi bi-people"></i>
+                            <span class="d-none d-md-inline">Participantes</span>
+                            <span class="d-inline d-md-none">Part.</span>
+                        </h5>
+                        <h2 class="display-6 fw-bold mb-1">{{ estatisticas.participantes }}</h2>
+                    </div>
+                    <div>
+                        <small class="opacity-75 d-block">Cadastrados</small>
+                        <small class="opacity-75">Ativos no sistema</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-6 col-sm-6 col-md-3">
+            <div class="stats-card stats-grupos h-100">
+                <div class="d-flex flex-column justify-content-between h-100">
+                    <div>
+                        <h5 class="mb-2">
+                            <i class="bi bi-collection"></i>
+                            <span class="d-none d-md-inline">Grupos</span>
+                            <span class="d-inline d-md-none">Grupos</span>
+                        </h5>
+                        <h2 class="display-6 fw-bold mb-1">{{ estatisticas.grupos_lar + estatisticas.grupos_tenda }}</h2>
+                    </div>
+                    <div>
+                        <small class="opacity-75 d-block">Ativos</small>
+                        <small class="opacity-75">
+                            Lar: {{ estatisticas.grupos_lar }} | Tenda: {{ estatisticas.grupos_tenda }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Próximas Escalas - Layout Responsivo -->
+    <div class="row g-3 mb-4">
+        <!-- Próximas Defumações -->
+        <div class="col-12 col-lg-6">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center">
+                    <div class="mb-2 mb-sm-0">
+                        <h5 class="mb-0">
+                            <i class="bi bi-house-door me-2"></i>
+                            <span class="d-none d-sm-inline">Próximas Defumações</span>
+                            <span class="d-inline d-sm-none">Próx. Defumações</span>
+                        </h5>
+                    </div>
+                    <div>
+                        <a href="/escalas?username=admin&password={{ request.query_params.get('password', '') }}" 
+                           class="btn btn-sm btn-light btn-mobile-sm">
+                            <i class="bi bi-eye me-1"></i>
+                            <span class="d-none d-sm-inline">Ver todas</span>
+                            <span class="d-inline d-sm-none">Todas</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    {% if escalas_lar and escalas_lar|length > 0 %}
+                        {% for escala in escalas_lar %}
+                        <div class="escala-item mb-3">
+                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+                                <div class="mb-2 mb-md-0">
+                                    <div class="d-flex align-items-center">
+                                        <div class="border-start border-success border-3 ps-2">
+                                            <h6 class="mb-0">{{ escala.grupo_nome }}</h6>
+                                            <small class="text-muted d-block">
+                                                <i class="bi bi-calendar-week me-1"></i>
+                                                Semana {{ escala.semana_ano }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-success fs-6 px-3 py-2">
+                                        {{ escala.data_formatada }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="text-center py-4">
-                        <i class="bi bi-calendar-x text-muted" style="font-size: 2rem;"></i>
-                        <p class="mt-2 text-muted">Nenhuma defumação agendada</p>
-                        <a href="/gerar?username=admin&password={{ request.query_params.get('password', '') }}" 
-                           class="btn btn-sm btn-success">Gerar Escala</a>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-lg-6 mb-4">
-        <div class="card">
-            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-stars me-2"></i>Próximas Limpezas</h5>
-                <a href="/escalas?username=admin&password={{ request.query_params.get('password', '') }}" 
-                   class="btn btn-sm btn-light">Ver todas</a>
-            </div>
-            <div class="card-body">
-                {% if escalas_tenda %}
-                    {% for escala in escalas_tenda %}
-                    <div class="border-start border-primary border-4 ps-3 mb-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="mb-1">{{ escala.grupo_nome }}</h6>
-                                <small class="text-muted">Limpeza mensal</small>
-                            </div>
-                            <div class="text-end">
-                                <span class="badge bg-primary">{{ escala.data_formatada }}</span>
-                            </div>
-                        </div>
-                        {% if escala.trabalho_formatado %}
-                        <small class="text-muted">Trabalho: {{ escala.trabalho_formatado }}</small>
+                        
+                        {% if not loop.last %}
+                        <hr class="my-2 opacity-25">
                         {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="mb-3">
+                                <i class="bi bi-calendar-x text-muted" style="font-size: 3rem;"></i>
+                            </div>
+                            <p class="text-muted mb-3">Nenhuma defumação agendada</p>
+                            <a href="/gerar?username=admin&password={{ request.query_params.get('password', '') }}" 
+                               class="btn btn-success btn-mobile-sm">
+                                <i class="bi bi-magic me-1"></i> Gerar Escala
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Próximas Limpezas -->
+        <div class="col-12 col-lg-6">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center">
+                    <div class="mb-2 mb-sm-0">
+                        <h5 class="mb-0">
+                            <i class="bi bi-stars me-2"></i>
+                            <span class="d-none d-sm-inline">Próximas Limpezas</span>
+                            <span class="d-inline d-sm-none">Próx. Limpezas</span>
+                        </h5>
                     </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="text-center py-4">
-                        <i class="bi bi-calendar-x text-muted" style="font-size: 2rem;"></i>
-                        <p class="mt-2 text-muted">Nenhuma limpeza agendada</p>
-                        <a href="/gerar?username=admin&password={{ request.query_params.get('password', '') }}" 
-                           class="btn btn-sm btn-primary">Gerar Escala</a>
+                    <div>
+                        <a href="/escalas?username=admin&password={{ request.query_params.get('password', '') }}" 
+                           class="btn btn-sm btn-light btn-mobile-sm">
+                            <i class="bi bi-eye me-1"></i>
+                            <span class="d-none d-sm-inline">Ver todas</span>
+                            <span class="d-inline d-sm-none">Todas</span>
+                        </a>
                     </div>
-                {% endif %}
+                </div>
+                
+                <div class="card-body">
+                    {% if escalas_tenda and escalas_tenda|length > 0 %}
+                        {% for escala in escalas_tenda %}
+                        <div class="escala-item mb-3">
+                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+                                <div class="mb-2 mb-md-0">
+                                    <div class="d-flex align-items-center">
+                                        <div class="border-start border-primary border-3 ps-2">
+                                            <h6 class="mb-0">{{ escala.grupo_nome }}</h6>
+                                            <small class="text-muted d-block">
+                                                <i class="bi bi-brush me-1"></i>
+                                                Limpeza mensal
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-column align-items-end">
+                                    <span class="badge bg-primary fs-6 px-3 py-2 mb-1">
+                                        {{ escala.data_formatada }}
+                                    </span>
+                                    {% if escala.trabalho_formatado %}
+                                    <small class="text-muted text-end d-block">
+                                        <i class="bi bi-hammer me-1"></i>
+                                        Trabalho: {{ escala.trabalho_formatado }}
+                                    </small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if not loop.last %}
+                        <hr class="my-2 opacity-25">
+                        {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="mb-3">
+                                <i class="bi bi-calendar-x text-muted" style="font-size: 3rem;"></i>
+                            </div>
+                            <p class="text-muted mb-3">Nenhuma limpeza agendada</p>
+                            <a href="/gerar?username=admin&password={{ request.query_params.get('password', '') }}" 
+                               class="btn btn-primary btn-mobile-sm">
+                                <i class="bi bi-magic me-1"></i> Gerar Escala
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Ações Rápidas -->
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-lightning me-2"></i>Ações Rápidas</h5>
+    <!-- Ações Rápidas - Layout Responsivo -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightning me-2"></i>
+                        <span class="d-none d-sm-inline">Ações Rápidas</span>
+                        <span class="d-inline d-sm-none">Ações</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <!-- Gerar Nova Escala -->
+                        <div class="col-12 col-sm-6 col-md-3">
+                            <a href="/gerar?username=admin&password={{ request.query_params.get('password', '') }}" 
+                               class="btn btn-success w-100 h-100 d-flex flex-column justify-content-center align-items-center p-3 btn-action">
+                                <i class="bi bi-magic mb-2" style="font-size: 1.5rem;"></i>
+                                <span class="text-center">
+                                    <span class="d-none d-md-block">Gerar Nova Escala</span>
+                                    <span class="d-block d-md-none">Gerar Escala</span>
+                                </span>
+                            </a>
+                        </div>
+                        
+                        <!-- Adicionar Participante -->
+                        <div class="col-12 col-sm-6 col-md-3">
+                            <a href="/participantes?username=admin&password={{ request.query_params.get('password', '') }}" 
+                               class="btn btn-primary w-100 h-100 d-flex flex-column justify-content-center align-items-center p-3 btn-action">
+                                <i class="bi bi-person-plus mb-2" style="font-size: 1.5rem;"></i>
+                                <span class="text-center">
+                                    <span class="d-none d-md-block">Adicionar Participante</span>
+                                    <span class="d-block d-md-none">Participante</span>
+                                </span>
+                            </a>
+                        </div>
+                        
+                        <!-- Gerenciar Grupos -->
+                        <div class="col-12 col-sm-6 col-md-3">
+                            <a href="/grupos?username=admin&password={{ request.query_params.get('password', '') }}" 
+                               class="btn btn-warning w-100 h-100 d-flex flex-column justify-content-center align-items-center p-3 btn-action">
+                                <i class="bi bi-plus-circle mb-2" style="font-size: 1.5rem;"></i>
+                                <span class="text-center">
+                                    <span class="d-none d-md-block">Gerenciar Grupos</span>
+                                    <span class="d-block d-md-none">Grupos</span>
+                                </span>
+                            </a>
+                        </div>
+                        
+                        <!-- Exportar Dados -->
+                        <div class="col-12 col-sm-6 col-md-3">
+                            <a href="/exportar?username=admin&password={{ request.query_params.get('password', '') }}" 
+                               class="btn btn-info w-100 h-100 d-flex flex-column justify-content-center align-items-center p-3 btn-action">
+                                <i class="bi bi-download mb-2" style="font-size: 1.5rem;"></i>
+                                <span class="text-center">
+                                    <span class="d-none d-md-block">Exportar Dados</span>
+                                    <span class="d-block d-md-none">Exportar</span>
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="d-flex flex-wrap gap-2">
-                    <a href="/gerar?username=admin&password={{ request.query_params.get('password', '') }}" 
-                       class="btn btn-success">
-                        <i class="bi bi-magic me-1"></i> Gerar Nova Escala
-                    </a>
-                    <a href="/participantes?username=admin&password={{ request.query_params.get('password', '') }}" 
-                       class="btn btn-primary">
-                        <i class="bi bi-person-plus me-1"></i> Adicionar Participante
-                    </a>
-                    <a href="/grupos?username=admin&password={{ request.query_params.get('password', '') }}" 
-                       class="btn btn-warning">
-                        <i class="bi bi-plus-circle me-1"></i> Gerenciar Grupos
-                    </a>
-                    <a href="/exportar?username=admin&password={{ request.query_params.get('password', '') }}" 
-                       class="btn btn-info">
-                        <i class="bi bi-download me-1"></i> Exportar Dados
-                    </a>
+        </div>
+    </div>
+
+    <!-- Informações Adicionais para Mobile -->
+    <div class="row d-lg-none">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-12 col-sm-6">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="bi bi-info-circle text-primary" style="font-size: 1.5rem;"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">Acesso Rápido</h6>
+                                    <small class="text-muted">Use os botões acima para navegar</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="bi bi-phone text-success" style="font-size: 1.5rem;"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">Versão Mobile</h6>
+                                    <small class="text-muted">Otimizado para celular</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- CSS Adicional para o Dashboard -->
+<style>
+    /* Estilos específicos para o dashboard */
+    .btn-action {
+        transition: all 0.3s ease;
+        border-radius: 10px;
+        min-height: 100px;
+        border: none;
+    }
+    
+    .btn-action:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .btn-mobile-sm {
+        min-height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .escala-item {
+        padding: 10px;
+        border-radius: 8px;
+        transition: background-color 0.2s;
+    }
+    
+    .escala-item:hover {
+        background-color: rgba(0,0,0,0.02);
+    }
+    
+    /* Responsividade para telas pequenas */
+    @media (max-width: 767.98px) {
+        .stats-card {
+            padding: 15px 10px;
+        }
+        
+        .stats-card h2 {
+            font-size: 1.8rem !important;
+        }
+        
+        .stats-card h5 {
+            font-size: 0.9rem;
+        }
+        
+        .btn-action {
+            min-height: 85px;
+            padding: 15px !important;
+        }
+        
+        .btn-action i {
+            font-size: 1.3rem !important;
+            margin-bottom: 8px;
+        }
+        
+        .card-header h5 {
+            font-size: 1.1rem;
+        }
+    }
+    
+    @media (max-width: 575.98px) {
+        .stats-card h2 {
+            font-size: 1.5rem !important;
+        }
+        
+        .stats-card h5 {
+            font-size: 0.8rem;
+        }
+        
+        .btn-action {
+            min-height: 75px;
+            padding: 12px !important;
+        }
+        
+        .badge.fs-6 {
+            font-size: 0.875rem !important;
+            padding: 6px 12px !important;
+        }
+    }
+    
+    /* Ajustes para telas muito pequenas */
+    @media (max-width: 360px) {
+        .stats-card {
+            padding: 12px 8px;
+        }
+        
+        .stats-card h2 {
+            font-size: 1.3rem !important;
+        }
+        
+        .btn-action {
+            min-height: 70px;
+        }
+        
+        .btn-action span {
+            font-size: 0.8rem;
+        }
+    }
+    
+    /* Ajustes para modo paisagem em celular */
+    @media (max-height: 500px) and (orientation: landscape) {
+        .stats-card {
+            padding: 10px 5px;
+        }
+        
+        .btn-action {
+            min-height: 60px;
+            padding: 8px !important;
+        }
+    }
+</style>
+
+<!-- JavaScript para melhorar a experiência -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Adicionar tooltips para botões em mobile
+        if (window.innerWidth < 768) {
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            
+            // Adicionar tooltips para os botões de ação
+            const actionButtons = document.querySelectorAll('.btn-action');
+            actionButtons.forEach(btn => {
+                const text = btn.querySelector('span').textContent.trim();
+                btn.setAttribute('data-bs-toggle', 'tooltip');
+                btn.setAttribute('data-bs-placement', 'top');
+                btn.setAttribute('title', text);
+            });
+            
+            // Inicializar tooltips
+            const actionTooltips = [].slice.call(document.querySelectorAll('.btn-action'));
+            actionTooltips.map(function (tooltipEl) {
+                return new bootstrap.Tooltip(tooltipEl);
+            });
+        }
+        
+        // Animar a entrada dos cards
+        const statsCards = document.querySelectorAll('.stats-card');
+        statsCards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 100 * index);
+        });
+        
+        // Detectar e ajustar para telas muito estreitas
+        function adjustForNarrowScreens() {
+            if (window.innerWidth < 400) {
+                document.body.classList.add('narrow-screen');
+            } else {
+                document.body.classList.remove('narrow-screen');
+            }
+        }
+        
+        // Verificar na carga e ao redimensionar
+        adjustForNarrowScreens();
+        window.addEventListener('resize', adjustForNarrowScreens);
+        
+        // Melhorar acessibilidade
+        document.querySelectorAll('a, button').forEach(element => {
+            element.addEventListener('focus', function() {
+                this.style.outline = '2px solid #007bff';
+                this.style.outlineOffset = '2px';
+            });
+            
+            element.addEventListener('blur', function() {
+                this.style.outline = '';
+            });
+        });
+    });
+</script>
 {% endblock %}

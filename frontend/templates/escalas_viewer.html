@@ -1,21 +1,645 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3 mb-0"><i class="bi bi-calendar3 me-2"></i>Escalas</h1>
-    <div>
-        <span class="badge bg-info">
-            <i class="bi bi-eye me-1"></i> Modo Visualização
-        </span>
+<div class="container-fluid px-0">
+    <!-- Cabeçalho Responsivo -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
+        <div class="mb-3 mb-md-0">
+            <h1 class="h3 mb-1">
+                <i class="bi bi-calendar3 me-2"></i>Escalas
+            </h1>
+            <p class="text-muted mb-0">
+                Visualização de escalas - Modo Visualizador
+            </p>
+        </div>
+        
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-info">
+                <i class="bi bi-eye me-1"></i> Modo Visualização
+            </span>
+            <span class="badge bg-light text-dark d-none d-md-inline">
+                <i class="bi bi-calendar me-1"></i> {{ estatisticas.ano }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Alerta de Modo Visualizador -->
+    <div class="alert alert-info mb-4">
+        <div class="d-flex">
+            <div class="me-3 flex-shrink-0">
+                <i class="bi bi-info-circle" style="font-size: 1.5rem;"></i>
+            </div>
+            <div>
+                <h6 class="alert-heading mb-1">Você está no modo <strong>visualizador</strong></h6>
+                <p class="mb-0 small">
+                    Este modo permite apenas a visualização das escalas. Para editar dados, adicionar participantes ou 
+                    gerenciar grupos, faça login como administrador.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Escalas - Layout Responsivo -->
+    <div class="row g-3 mb-4">
+        <!-- Defumações - Lar Otoniel -->
+        <div class="col-12 col-lg-6">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-house-door me-2"></i>
+                            <span class="d-none d-md-inline">Defumações - Lar Otoniel</span>
+                            <span class="d-inline d-md-none">Defumações</span>
+                        </h5>
+                        <span class="badge bg-light text-dark">
+                            {{ estatisticas.defumacoes }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    {% if escalas_lar and escalas_lar|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-borderless table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col" class="d-none d-md-table-cell">Data</th>
+                                        <th scope="col" class="d-md-none">Data/Grupo</th>
+                                        <th scope="col" class="d-none d-md-table-cell">Grupo</th>
+                                        <th scope="col" class="d-none d-lg-table-cell">Semana</th>
+                                        <th scope="col">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for escala in escalas_lar %}
+                                    <tr class="align-middle">
+                                        <td>
+                                            <div class="d-md-none">
+                                                <div class="fw-semibold">{{ escala.data_formatada }}</div>
+                                                <small class="text-muted">{{ escala.grupo_nome }}</small>
+                                            </div>
+                                            <span class="d-none d-md-inline">{{ escala.data_formatada }}</span>
+                                        </td>
+                                        <td class="d-none d-md-table-cell">
+                                            {{ escala.grupo_nome }}
+                                        </td>
+                                        <td class="d-none d-lg-table-cell">
+                                            <span class="text-muted">Semana</span> {{ escala.semana_ano }}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if escala.status == 'confirmado' else 'warning' }} rounded-pill px-3 py-1">
+                                                <i class="bi bi-{{ 'check-circle' if escala.status == 'confirmado' else 'clock' }} me-1"></i>
+                                                {{ escala.status|title }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% if not loop.last %}
+                                    <tr><td colspan="4" class="border-bottom opacity-25"></td></tr>
+                                    {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Paginação Simples para Mobile -->
+                        <div class="d-flex justify-content-between align-items-center mt-3 d-md-none">
+                            <small class="text-muted">
+                                Mostrando {{ escalas_lar|length }} defumações
+                            </small>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn btn-outline-success">
+                                    <i class="bi bi-chevron-left"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-success">
+                                    <i class="bi bi-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="mb-3">
+                                <i class="bi bi-calendar-x text-muted" style="font-size: 3rem;"></i>
+                            </div>
+                            <h6 class="text-muted mb-2">Nenhuma defumação agendada</h6>
+                            <p class="text-muted small mb-0">
+                                As escalas serão exibidas aqui quando geradas por um administrador
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Rodapé do Card -->
+                <div class="card-footer bg-transparent border-top-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Apenas visualização
+                        </small>
+                        {% if escalas_lar and escalas_lar|length > 0 %}
+                        <small class="text-muted">
+                            Total: {{ escalas_lar|length }} defumações
+                        </small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Limpezas - Tenda Pai Oxalá -->
+        <div class="col-12 col-lg-6">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-stars me-2"></i>
+                            <span class="d-none d-md-inline">Limpezas - Tenda Pai Oxalá</span>
+                            <span class="d-inline d-md-none">Limpezas</span>
+                        </h5>
+                        <span class="badge bg-light text-dark">
+                            {{ estatisticas.limpezas }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    {% if escalas_tenda and escalas_tenda|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-borderless table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col" class="d-none d-md-table-cell">Data</th>
+                                        <th scope="col" class="d-md-none">Data/Grupo</th>
+                                        <th scope="col" class="d-none d-md-table-cell">Grupo</th>
+                                        <th scope="col" class="d-none d-lg-table-cell">Trabalho</th>
+                                        <th scope="col">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for escala in escalas_tenda %}
+                                    <tr class="align-middle">
+                                        <td>
+                                            <div class="d-md-none">
+                                                <div class="fw-semibold">{{ escala.data_formatada }}</div>
+                                                <small class="text-muted">{{ escala.grupo_nome }}</small>
+                                                {% if escala.trabalho_formatado %}
+                                                <small class="text-muted d-block mt-1">
+                                                    <i class="bi bi-hammer me-1"></i>
+                                                    {{ escala.trabalho_formatado }}
+                                                </small>
+                                                {% endif %}
+                                            </div>
+                                            <span class="d-none d-md-inline">{{ escala.data_formatada }}</span>
+                                        </td>
+                                        <td class="d-none d-md-table-cell">
+                                            {{ escala.grupo_nome }}
+                                        </td>
+                                        <td class="d-none d-lg-table-cell">
+                                            {% if escala.trabalho_formatado %}
+                                            <div class="text-muted small">Trabalho</div>
+                                            <div>{{ escala.trabalho_formatado }}</div>
+                                            {% else %}
+                                            <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if escala.status == 'confirmado' else 'warning' }} rounded-pill px-3 py-1">
+                                                <i class="bi bi-{{ 'check-circle' if escala.status == 'confirmado' else 'clock' }} me-1"></i>
+                                                {{ escala.status|title }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% if not loop.last %}
+                                    <tr><td colspan="4" class="border-bottom opacity-25"></td></tr>
+                                    {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Paginação Simples para Mobile -->
+                        <div class="d-flex justify-content-between align-items-center mt-3 d-md-none">
+                            <small class="text-muted">
+                                Mostrando {{ escalas_tenda|length }} limpezas
+                            </small>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn btn-outline-primary">
+                                    <i class="bi bi-chevron-left"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-primary">
+                                    <i class="bi bi-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="mb-3">
+                                <i class="bi bi-calendar-x text-muted" style="font-size: 3rem;"></i>
+                            </div>
+                            <h6 class="text-muted mb-2">Nenhuma limpeza agendada</h6>
+                            <p class="text-muted small mb-0">
+                                As escalas serão exibidas aqui quando geradas por um administrador
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Rodapé do Card -->
+                <div class="card-footer bg-transparent border-top-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Apenas visualização
+                        </small>
+                        {% if escalas_tenda and escalas_tenda|length > 0 %}
+                        <small class="text-muted">
+                            Total: {{ escalas_tenda|length }} limpezas
+                        </small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informações para Visualizador -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-info">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3 text-info">
+                                    <i class="bi bi-eye" style="font-size: 1.5rem;"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">Acesso Limitado</h6>
+                                    <small class="text-muted">Somente visualização</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 col-md-4">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3 text-success">
+                                    <i class="bi bi-calendar-check" style="font-size: 1.5rem;"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">Escalas Atuais</h6>
+                                    <small class="text-muted">Ano {{ estatisticas.ano }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 col-md-4">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3 text-warning">
+                                    <i class="bi bi-shield-lock" style="font-size: 1.5rem;"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">Precisa de Acesso?</h6>
+                                    <small class="text-muted">Contate o administrador</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dica para Mobile -->
+    <div class="d-md-none mt-4">
+        <div class="alert alert-light border">
+            <div class="d-flex align-items-center">
+                <div class="me-3">
+                    <i class="bi bi-phone text-primary" style="font-size: 1.5rem;"></i>
+                </div>
+                <div>
+                    <small class="text-muted">
+                        <strong>Dica:</strong> Toque em uma linha para ver mais detalhes. Role horizontalmente para ver todas as colunas.
+                    </small>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="alert alert-info">
-    <i class="bi bi-info-circle me-2"></i>
-    Você está no modo <strong>visualizador</strong>. Para editar dados, faça login como administrador.
-</div>
+<!-- CSS Adicional para Escalas Viewer -->
+<style>
+    /* Estilos específicos para modo visualizador */
+    .viewer-mode .card-header {
+        opacity: 0.9;
+    }
+    
+    .table-responsive {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .table tbody tr {
+        transition: background-color 0.2s;
+        cursor: pointer;
+    }
+    
+    .table tbody tr:hover {
+        background-color: rgba(0, 0, 0, 0.02);
+    }
+    
+    /* Badges para status */
+    .badge.rounded-pill {
+        min-width: 100px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Ajustes para tabelas em mobile */
+    @media (max-width: 767.98px) {
+        .table {
+            font-size: 0.875rem;
+        }
+        
+        .table thead {
+            display: none;
+        }
+        
+        .table tbody tr {
+            display: block;
+            padding: 12px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .table tbody tr:last-child {
+            border-bottom: none;
+        }
+        
+        .table tbody td {
+            display: block;
+            text-align: right;
+            padding: 4px 0;
+            position: relative;
+        }
+        
+        .table tbody td::before {
+            content: attr(data-label);
+            position: absolute;
+            left: 0;
+            top: 4px;
+            font-weight: 600;
+            color: #495057;
+            text-align: left;
+        }
+        
+        /* Esconder separadores extras em mobile */
+        .table tbody tr:has(+ tr) {
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .badge.rounded-pill {
+            min-width: 80px;
+            font-size: 0.75rem;
+            padding: 4px 12px;
+        }
+    }
+    
+    /* Ajustes para telas muito pequenas */
+    @media (max-width: 575.98px) {
+        .card-header h5 {
+            font-size: 1rem;
+        }
+        
+        .alert .d-flex {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .alert .me-3 {
+            margin-right: 0 !important;
+            margin-bottom: 10px;
+        }
+        
+        .table tbody td {
+            padding: 6px 0;
+        }
+        
+        .badge.rounded-pill {
+            min-width: 70px;
+            font-size: 0.7rem;
+        }
+    }
+    
+    /* Ajustes para modo paisagem */
+    @media (max-height: 500px) and (orientation: landscape) {
+        .card-body {
+            padding: 10px !important;
+        }
+        
+        .table tbody tr {
+            padding: 8px 0;
+        }
+        
+        .alert {
+            padding: 8px 12px;
+            margin-bottom: 10px;
+        }
+    }
+    
+    /* Animações suaves */
+    .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+</style>
 
-<!-- Conteúdo idêntico ao escalas.html normal -->
-<!-- ... (mesmo conteúdo de escalas.html, sem botões de ação) ... -->
-
+<!-- JavaScript para melhorar a experiência do visualizador -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Adicionar labels para células da tabela em mobile
+        function setupMobileTable() {
+            if (window.innerWidth < 768) {
+                // Adicionar data-labels para células da tabela de defumações
+                document.querySelectorAll('.card:first-child tbody td').forEach((td, index) => {
+                    const row = td.closest('tr');
+                    const cells = row.querySelectorAll('td');
+                    
+                    if (index === 0) td.setAttribute('data-label', 'Data/Grupo');
+                    if (index === 1) td.setAttribute('data-label', 'Semana');
+                    if (index === 2) td.setAttribute('data-label', 'Status');
+                });
+                
+                // Adicionar data-labels para células da tabela de limpezas
+                document.querySelectorAll('.card:last-child tbody td').forEach((td, index) => {
+                    const row = td.closest('tr');
+                    const cells = row.querySelectorAll('td');
+                    
+                    if (index === 0) td.setAttribute('data-label', 'Data/Grupo/Trabalho');
+                    if (index === 1) td.setAttribute('data-label', 'Trabalho');
+                    if (index === 2) td.setAttribute('data-label', 'Status');
+                });
+                
+                // Adicionar clique nas linhas para mobile (feedback visual)
+                document.querySelectorAll('tbody tr').forEach(row => {
+                    row.addEventListener('click', function() {
+                        // Remover highlight de outras linhas
+                        document.querySelectorAll('tbody tr').forEach(r => {
+                            r.classList.remove('table-active');
+                        });
+                        
+                        // Adicionar highlight na linha clicada
+                        this.classList.add('table-active');
+                        
+                        // Remover highlight após 1 segundo
+                        setTimeout(() => {
+                            this.classList.remove('table-active');
+                        }, 1000);
+                    });
+                });
+            }
+        }
+        
+        // Configurar tooltips para badges em mobile
+        function setupTooltips() {
+            if (window.innerWidth < 768) {
+                document.querySelectorAll('.badge').forEach(badge => {
+                    badge.setAttribute('data-bs-toggle', 'tooltip');
+                    
+                    if (badge.classList.contains('bg-success')) {
+                        badge.setAttribute('title', 'Status: Confirmado');
+                    } else if (badge.classList.contains('bg-warning')) {
+                        badge.setAttribute('title', 'Status: Pendente');
+                    } else if (badge.classList.contains('bg-info')) {
+                        badge.setAttribute('title', 'Modo Visualizador - Somente leitura');
+                    }
+                });
+                
+                // Inicializar tooltips
+                const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+            }
+        }
+        
+        // Configurar paginação simulada para mobile
+        function setupPagination() {
+            if (window.innerWidth < 768) {
+                const prevButtons = document.querySelectorAll('.btn-outline-success, .btn-outline-primary');
+                const nextButtons = document.querySelectorAll('.btn-outline-success, .btn-outline-primary');
+                
+                prevButtons.forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        showToast('Página anterior', 'info');
+                    });
+                });
+                
+                nextButtons.forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        showToast('Próxima página', 'info');
+                    });
+                });
+            }
+        }
+        
+        // Função para mostrar toast (feedback)
+        function showToast(message, type = 'info') {
+            // Criar elemento toast
+            const toastEl = document.createElement('div');
+            toastEl.className = `toast align-items-center text-bg-${type} border-0`;
+            toastEl.setAttribute('role', 'alert');
+            toastEl.setAttribute('aria-live', 'assertive');
+            toastEl.setAttribute('aria-atomic', 'true');
+            
+            toastEl.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            
+            // Adicionar ao body
+            document.body.appendChild(toastEl);
+            
+            // Inicializar e mostrar
+            const toast = new bootstrap.Toast(toastEl, {
+                delay: 2000
+            });
+            toast.show();
+            
+            // Remover após ser escondido
+            toastEl.addEventListener('hidden.bs.toast', function () {
+                document.body.removeChild(toastEl);
+            });
+        }
+        
+        // Adicionar indicador de scroll horizontal para mobile
+        function setupScrollIndicator() {
+            if (window.innerWidth < 768) {
+                const tables = document.querySelectorAll('.table-responsive');
+                
+                tables.forEach(table => {
+                    table.addEventListener('scroll', function() {
+                        const maxScroll = this.scrollWidth - this.clientWidth;
+                        const currentScroll = this.scrollLeft;
+                        
+                        if (currentScroll > 10 && currentScroll < maxScroll - 10) {
+                            this.classList.add('scrolling');
+                        } else {
+                            this.classList.remove('scrolling');
+                        }
+                    });
+                });
+            }
+        }
+        
+        // Inicializar todas as funções
+        setupMobileTable();
+        setupTooltips();
+        setupPagination();
+        setupScrollIndicator();
+        
+        // Reconfigurar ao redimensionar a janela
+        window.addEventListener('resize', function() {
+            setupMobileTable();
+            setupTooltips();
+        });
+        
+        // Adicionar classe para modo visualizador no body
+        document.body.classList.add('viewer-mode');
+        
+        // Ajustar para telas muito estreitas
+        function adjustForNarrowScreens() {
+            if (window.innerWidth < 400) {
+                document.body.classList.add('narrow-screen');
+                
+                // Ajustar badges
+                document.querySelectorAll('.badge.rounded-pill').forEach(badge => {
+                    badge.style.minWidth = '60px';
+                    badge.style.fontSize = '0.65rem';
+                    badge.style.padding = '3px 8px';
+                });
+            } else {
+                document.body.classList.remove('narrow-screen');
+                
+                // Restaurar badges
+                document.querySelectorAll('.badge.rounded-pill').forEach(badge => {
+                    badge.style.minWidth = '';
+                    badge.style.fontSize = '';
+                    badge.style.padding = '';
+                });
+            }
+        }
+        
+        adjustForNarrowScreens();
+        window.addEventListener('resize', adjustForNarrowScreens);
+    });
+</script>
 {% endblock %}

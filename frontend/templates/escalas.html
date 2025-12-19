@@ -1,108 +1,612 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3 mb-0"><i class="bi bi-calendar3 me-2"></i>Escalas</h1>
-    <a href="/gerar?username=admin&password={{ request.query_params.get('password', '') }}" class="btn btn-success">
-        <i class="bi bi-magic me-1"></i> Gerar Nova Escala
-    </a>
+<div class="container-fluid px-0">
+    <!-- Cabeçalho Responsivo -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
+        <div class="mb-3 mb-md-0">
+            <h1 class="h3 mb-1">
+                <i class="bi bi-calendar3 me-2"></i>Escalas
+            </h1>
+            <p class="text-muted mb-0">
+                Visualização completa de escalas
+            </p>
+        </div>
+        
+        <div class="d-flex flex-column flex-sm-row align-items-start align-items-md-center gap-2">
+            {% if is_admin %}
+            <a href="/gerar?username=admin&password={{ request.query_params.get('password', '') }}" 
+               class="btn btn-success btn-mobile-block">
+                <i class="bi bi-magic me-1"></i>
+                <span class="d-none d-sm-inline">Gerar Nova Escala</span>
+                <span class="d-inline d-sm-none">Gerar Escala</span>
+            </a>
+            {% else %}
+            <span class="badge bg-info">
+                <i class="bi bi-eye me-1"></i> Modo Visualização
+            </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Alerta para Visualizadores -->
+    {% if not is_admin %}
+    <div class="alert alert-info mb-4">
+        <div class="d-flex">
+            <div class="me-3 flex-shrink-0">
+                <i class="bi bi-info-circle" style="font-size: 1.5rem;"></i>
+            </div>
+            <div>
+                <h6 class="alert-heading mb-1">Modo <strong>visualizador</strong></h6>
+                <p class="mb-0 small">
+                    Você está no modo de visualização. Para gerar novas escalas ou editar dados, 
+                    faça login como administrador.
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Escalas - Layout Responsivo -->
+    <div class="row g-3 mb-4">
+        <!-- Defumações - Lar Otoniel -->
+        <div class="col-12 col-lg-6">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-house-door me-2"></i>
+                            <span class="d-none d-md-inline">Defumações - Lar Otoniel</span>
+                            <span class="d-inline d-md-none">Defumações</span>
+                        </h5>
+                        <span class="badge bg-light text-dark d-none d-md-inline">
+                            {{ escalas_lar|length if escalas_lar else 0 }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    {% if escalas_lar and escalas_lar|length > 0 %}
+                        <!-- Desktop: Tabela completa -->
+                        <div class="table-responsive d-none d-md-block">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 25%;">Data</th>
+                                        <th style="width: 30%;">Grupo</th>
+                                        <th style="width: 25%;">Semana</th>
+                                        <th style="width: 20%;">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for escala in escalas_lar %}
+                                    <tr>
+                                        <td class="fw-semibold">{{ escala.data_formatada }}</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-success-subtle text-success me-2">
+                                                    {{ escala.grupo_id }}
+                                                </span>
+                                                {{ escala.grupo_nome }}
+                                            </div>
+                                        </td>
+                                        <td>Semana {{ escala.semana_ano }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if escala.status == 'confirmado' else 'warning' }} rounded-pill px-3 py-1">
+                                                <i class="bi bi-{{ 'check-circle' if escala.status == 'confirmado' else 'clock' }} me-1"></i>
+                                                {{ escala.status|title }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Mobile: Lista de cards -->
+                        <div class="d-md-none">
+                            <div class="list-group list-group-flush">
+                                {% for escala in escalas_lar %}
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h6 class="mb-0">{{ escala.grupo_nome }}</h6>
+                                            <small class="text-muted">ID: {{ escala.grupo_id }}</small>
+                                        </div>
+                                        <span class="badge bg-{{ 'success' if escala.status == 'confirmado' else 'warning' }}">
+                                            {{ escala.status|title }}
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="mb-2">
+                                        <div class="fw-semibold">{{ escala.data_formatada }}</div>
+                                        <small class="text-muted">Semana {{ escala.semana_ano }}</small>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            <i class="bi bi-calendar-week me-1"></i>
+                                            Defumação
+                                        </small>
+                                        {% if is_admin %}
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <button type="button" class="btn btn-outline-success btn-sm"
+                                                    data-bs-toggle="tooltip" title="Editar">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% if not loop.last %}
+                                <hr class="my-2 mx-0 opacity-25">
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="mb-3">
+                                <i class="bi bi-calendar-x text-muted" style="font-size: 3rem;"></i>
+                            </div>
+                            <h6 class="text-muted mb-2">Nenhuma defumação agendada</h6>
+                            <p class="text-muted small mb-3">
+                                {% if is_admin %}
+                                Gere uma nova escala para começar
+                                {% else %}
+                                Aguarde o administrador gerar as escalas
+                                {% endif %}
+                            </p>
+                            {% if is_admin %}
+                            <a href="/gerar?username=admin&password={{ request.query_params.get('password', '') }}" 
+                               class="btn btn-success btn-mobile-block">
+                                <i class="bi bi-magic me-1"></i> Gerar Escala
+                            </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Rodapé do Card -->
+                {% if escalas_lar and escalas_lar|length > 0 %}
+                <div class="card-footer bg-transparent border-top-0 py-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Total: {{ escalas_lar|length }} defumações
+                        </small>
+                        {% if is_admin %}
+                        <a href="/exportar?username=admin&password={{ request.query_params.get('password', '') }}" 
+                           class="btn btn-sm btn-outline-success">
+                            <i class="bi bi-download me-1"></i>
+                            <span class="d-none d-sm-inline">Exportar</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Limpezas - Tenda Pai Oxalá -->
+        <div class="col-12 col-lg-6">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-stars me-2"></i>
+                            <span class="d-none d-md-inline">Limpezas - Tenda Pai Oxalá</span>
+                            <span class="d-inline d-md-none">Limpezas</span>
+                        </h5>
+                        <span class="badge bg-light text-dark d-none d-md-inline">
+                            {{ escalas_tenda|length if escalas_tenda else 0 }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    {% if escalas_tenda and escalas_tenda|length > 0 %}
+                        <!-- Desktop: Tabela completa -->
+                        <div class="table-responsive d-none d-md-block">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 25%;">Data</th>
+                                        <th style="width: 30%;">Grupo</th>
+                                        <th style="width: 25%;">Trabalho</th>
+                                        <th style="width: 20%;">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for escala in escalas_tenda %}
+                                    <tr>
+                                        <td class="fw-semibold">{{ escala.data_formatada }}</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-primary-subtle text-primary me-2">
+                                                    {{ escala.grupo_id }}
+                                                </span>
+                                                {{ escala.grupo_nome }}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if escala.trabalho_formatado %}
+                                            <div class="fw-semibold">{{ escala.trabalho_formatado }}</div>
+                                            <small class="text-muted">Trabalho mensal</small>
+                                            {% else %}
+                                            <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if escala.status == 'confirmado' else 'warning' }} rounded-pill px-3 py-1">
+                                                <i class="bi bi-{{ 'check-circle' if escala.status == 'confirmado' else 'clock' }} me-1"></i>
+                                                {{ escala.status|title }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Mobile: Lista de cards -->
+                        <div class="d-md-none">
+                            <div class="list-group list-group-flush">
+                                {% for escala in escalas_tenda %}
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h6 class="mb-0">{{ escala.grupo_nome }}</h6>
+                                            <small class="text-muted">ID: {{ escala.grupo_id }}</small>
+                                        </div>
+                                        <span class="badge bg-{{ 'success' if escala.status == 'confirmado' else 'warning' }}">
+                                            {{ escala.status|title }}
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="mb-2">
+                                        <div class="fw-semibold">{{ escala.data_formatada }}</div>
+                                        {% if escala.trabalho_formatado %}
+                                        <small class="text-muted">
+                                            <i class="bi bi-hammer me-1"></i>
+                                            Trabalho: {{ escala.trabalho_formatado }}
+                                        </small>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            <i class="bi bi-brush me-1"></i>
+                                            Limpeza
+                                        </small>
+                                        {% if is_admin %}
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <button type="button" class="btn btn-outline-primary btn-sm"
+                                                    data-bs-toggle="tooltip" title="Editar">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% if not loop.last %}
+                                <hr class="my-2 mx-0 opacity-25">
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="mb-3">
+                                <i class="bi bi-calendar-x text-muted" style="font-size: 3rem;"></i>
+                            </div>
+                            <h6 class="text-muted mb-2">Nenhuma limpeza agendada</h6>
+                            <p class="text-muted small mb-3">
+                                {% if is_admin %}
+                                Gere uma nova escala para começar
+                                {% else %}
+                                Aguarde o administrador gerar as escalas
+                                {% endif %}
+                            </p>
+                            {% if is_admin %}
+                            <a href="/gerar?username=admin&password={{ request.query_params.get('password', '') }}" 
+                               class="btn btn-primary btn-mobile-block">
+                                <i class="bi bi-magic me-1"></i> Gerar Escala
+                            </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Rodapé do Card -->
+                {% if escalas_tenda and escalas_tenda|length > 0 %}
+                <div class="card-footer bg-transparent border-top-0 py-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Total: {{ escalas_tenda|length }} limpezas
+                        </small>
+                        {% if is_admin %}
+                        <a href="/exportar?username=admin&password={{ request.query_params.get('password', '') }}" 
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-download me-1"></i>
+                            <span class="d-none d-sm-inline">Exportar</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Dicas para Mobile -->
+    <div class="d-md-none mt-4">
+        <div class="alert alert-light border">
+            <div class="d-flex align-items-center">
+                <div class="me-3">
+                    <i class="bi bi-phone text-primary" style="font-size: 1.5rem;"></i>
+                </div>
+                <div>
+                    <small class="text-muted">
+                        <strong>Dica:</strong> Role para ver todas as escalas. 
+                        {% if not is_admin %}
+                        Para editar, faça login como administrador.
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div class="row">
-    <div class="col-lg-6 mb-4">
-        <div class="card">
-            <div class="card-header bg-success text-white">
-                <h5 class="mb-0"><i class="bi bi-house-door me-2"></i>Defumações - Lar Otoniel</h5>
-            </div>
-            <div class="card-body">
-                {% if escalas_lar %}
-                <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Data</th>
-                                <th>Grupo</th>
-                                <th>Semana</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for escala in escalas_lar %}
-                            <tr>
-                                <td>{{ escala.data_formatada }}</td>
-                                <td>{{ escala.grupo_nome }}</td>
-                                <td>Semana {{ escala.semana_ano }}</td>
-                                <td>
-                                    <span class="badge bg-{{ 'success' if escala.status == 'confirmado' else 'warning' }}">
-                                        {{ escala.status|title }}
-                                    </span>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <div class="text-center py-4">
-                    <i class="bi bi-calendar-x text-muted" style="font-size: 2rem;"></i>
-                    <p class="mt-2 text-muted">Nenhuma defumação agendada</p>
-                    <a href="/gerar?username=admin&password={{ request.query_params.get('password', '') }}" 
-                       class="btn btn-sm btn-success">Gerar Escala</a>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
+<!-- CSS Adicional para Responsividade -->
+<style>
+    /* Botões responsivos */
+    .btn-mobile-block {
+        width: 100%;
+    }
     
-    <div class="col-lg-6 mb-4">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="bi bi-stars me-2"></i>Limpezas - Tenda Pai Oxalá</h5>
-            </div>
-            <div class="card-body">
-                {% if escalas_tenda %}
-                <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Data</th>
-                                <th>Grupo</th>
-                                <th>Trabalho</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for escala in escalas_tenda %}
-                            <tr>
-                                <td>{{ escala.data_formatada }}</td>
-                                <td>{{ escala.grupo_nome }}</td>
-                                <td>
-                                    {% if escala.trabalho_formatado %}
-                                    {{ escala.trabalho_formatado }}
-                                    {% else %}
-                                    <span class="text-muted">-</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <span class="badge bg-{{ 'success' if escala.status == 'confirmado' else 'warning' }}">
-                                        {{ escala.status|title }}
-                                    </span>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+    @media (min-width: 576px) {
+        .btn-mobile-block {
+            width: auto;
+        }
+    }
+    
+    /* Tabelas desktop */
+    .table-hover tbody tr {
+        transition: background-color 0.2s;
+        cursor: pointer;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 0, 0, 0.03);
+    }
+    
+    /* Cards mobile */
+    .list-group-item {
+        transition: background-color 0.2s;
+    }
+    
+    .list-group-item:hover {
+        background-color: rgba(0, 0, 0, 0.02);
+    }
+    
+    /* Badges coloridos */
+    .badge.bg-success-subtle {
+        background-color: rgba(40, 167, 69, 0.1) !important;
+        color: #28a745 !important;
+        border: 1px solid rgba(40, 167, 69, 0.2);
+        font-size: 0.75rem;
+        padding: 2px 6px;
+    }
+    
+    .badge.bg-primary-subtle {
+        background-color: rgba(0, 123, 255, 0.1) !important;
+        color: #007bff !important;
+        border: 1px solid rgba(0, 123, 255, 0.2);
+        font-size: 0.75rem;
+        padding: 2px 6px;
+    }
+    
+    /* Ajustes para mobile */
+    @media (max-width: 767.98px) {
+        .card-header h5 {
+            font-size: 1.1rem;
+        }
+        
+        .list-group-item h6 {
+            font-size: 1rem;
+        }
+        
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 0.875rem;
+        }
+        
+        /* Ajustar padding em mobile */
+        .card-body {
+            padding: 1rem !important;
+        }
+        
+        .list-group-item {
+            padding: 12px 0;
+        }
+    }
+    
+    @media (max-width: 575.98px) {
+        .card-header {
+            padding: 12px 15px;
+        }
+        
+        .list-group-item {
+            padding: 10px 0;
+        }
+        
+        .btn-sm {
+            padding: 4px 6px;
+            font-size: 0.8rem;
+        }
+        
+        .badge.rounded-pill {
+            padding: 4px 10px !important;
+            font-size: 0.75rem;
+        }
+    }
+    
+    /* Animações e transições */
+    .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    
+    /* Status indicators */
+    .badge[class*="bg-"] {
+        transition: all 0.3s ease;
+    }
+    
+    /* Ajustes para telas muito pequenas */
+    @media (max-width: 360px) {
+        .card-header h5 {
+            font-size: 1rem;
+        }
+        
+        .btn-mobile-block span {
+            font-size: 0.9rem;
+        }
+        
+        .badge.rounded-pill {
+            padding: 3px 8px !important;
+            font-size: 0.7rem;
+        }
+    }
+</style>
+
+<!-- JavaScript para melhorar a experiência -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar tooltips (apenas para admin)
+        {% if is_admin %}
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        {% endif %}
+        
+        // Adicionar clique nas linhas da tabela (desktop)
+        document.querySelectorAll('.table-hover tbody tr').forEach(row => {
+            row.addEventListener('click', function() {
+                // Toggle de classe ativa
+                this.classList.toggle('table-active');
+            });
+        });
+        
+        // Adicionar clique nos cards (mobile)
+        document.querySelectorAll('.list-group-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                // Não selecionar se clicou em um botão
+                if (e.target.closest('button') || e.target.closest('a')) {
+                    return;
+                }
+                
+                // Toggle de classe ativa
+                this.classList.toggle('active');
+                
+                // Feedback visual temporário
+                const originalBg = this.style.backgroundColor;
+                this.style.backgroundColor = 'rgba(0, 123, 255, 0.05)';
+                
+                setTimeout(() => {
+                    if (!this.classList.contains('active')) {
+                        this.style.backgroundColor = originalBg;
+                    }
+                }, 300);
+            });
+        });
+        
+        // Botões de edição para admin
+        {% if is_admin %}
+        document.querySelectorAll('.btn-outline-success, .btn-outline-primary').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                
+                // Encontrar a escala correspondente
+                const item = this.closest('.list-group-item') || 
+                            this.closest('tr');
+                
+                if (item) {
+                    const grupoNome = item.querySelector('h6')?.textContent || 
+                                     item.querySelector('td:nth-child(2) div')?.textContent.trim();
+                    
+                    // Simular edição (substituir por ação real)
+                    if (confirm(`Editar escala do grupo ${grupoNome}?`)) {
+                        showToast('Função de edição em desenvolvimento', 'info');
+                    }
+                }
+            });
+        });
+        {% endif %}
+        
+        // Função para mostrar toast
+        function showToast(message, type = 'info') {
+            // Criar elemento toast
+            const toastEl = document.createElement('div');
+            toastEl.className = `toast align-items-center text-bg-${type} border-0`;
+            toastEl.setAttribute('role', 'alert');
+            toastEl.setAttribute('aria-live', 'assertive');
+            toastEl.setAttribute('aria-atomic', 'true');
+            
+            toastEl.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
                 </div>
-                {% else %}
-                <div class="text-center py-4">
-                    <i class="bi bi-calendar-x text-muted" style="font-size: 2rem;"></i>
-                    <p class="mt-2 text-muted">Nenhuma limpeza agendada</p>
-                    <a href="/gerar?username=admin&password={{ request.query_params.get('password', '') }}" 
-                       class="btn btn-sm btn-primary">Gerar Escala</a>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
+            `;
+            
+            // Adicionar ao body
+            document.body.appendChild(toastEl);
+            
+            // Inicializar e mostrar
+            const toast = new bootstrap.Toast(toastEl, {
+                delay: 2000
+            });
+            toast.show();
+            
+            // Remover após ser escondido
+            toastEl.addEventListener('hidden.bs.toast', function () {
+                document.body.removeChild(toastEl);
+            });
+        }
+        
+        // Ajustar para diferentes tamanhos de tela
+        function adjustForScreenSize() {
+            const isMobile = window.innerWidth < 768;
+            
+            if (isMobile) {
+                document.body.classList.add('mobile-view');
+                
+                // Ajustar badges em mobile
+                document.querySelectorAll('.badge.rounded-pill').forEach(badge => {
+                    badge.style.minWidth = '80px';
+                });
+            } else {
+                document.body.classList.remove('mobile-view');
+                
+                // Restaurar badges em desktop
+                document.querySelectorAll('.badge.rounded-pill').forEach(badge => {
+                    badge.style.minWidth = '';
+                });
+            }
+        }
+        
+        adjustForScreenSize();
+        window.addEventListener('resize', adjustForScreenSize);
+    });
+</script>
 {% endblock %}
