@@ -54,9 +54,26 @@
                         <i class="bi bi-people" style="font-size: 1.5rem;"></i>
                     </div>
                     <div class="fs-4 fw-bold">
-                        {{ grupos_lar|sum(attribute='participantes_ids')|default(0) + grupos_tenda|sum(attribute='participantes_ids')|default(0) }}
+                        {# CORREÇÃO: Contar participantes de forma segura #}
+                        {% set total_participantes_lar = 0 %}
+                        {% for grupo in grupos_lar %}
+                            {% if grupo.participantes_ids %}
+                                {% set ids_lar = grupo.participantes_ids.split(',') %}
+                                {% set total_participantes_lar = total_participantes_lar + ids_lar|length %}
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% set total_participantes_tenda = 0 %}
+                        {% for grupo in grupos_tenda %}
+                            {% if grupo.participantes_ids %}
+                                {% set ids_tenda = grupo.participantes_ids.split(',') %}
+                                {% set total_participantes_tenda = total_participantes_tenda + ids_tenda|length %}
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {{ total_participantes_lar + total_participantes_tenda }}
                     </div>
-                    <small class="text-muted">Participantes</small>
+                    <small class="text-muted">Participantes em Grupos</small>
                 </div>
             </div>
         </div>
@@ -127,7 +144,11 @@
                                                 </small>
                                                 <small class="text-muted">
                                                     <i class="bi bi-people me-1"></i>
-                                                    {{ grupo.participantes_ids.split(',')|length if grupo.participantes_ids else 0 }} participantes
+                                                    {% if grupo.participantes_ids %}
+                                                        {{ grupo.participantes_ids.split(',')|length }} participantes
+                                                    {% else %}
+                                                        0 participantes
+                                                    {% endif %}
                                                 </small>
                                             </div>
                                         </div>
@@ -181,7 +202,11 @@
                                                 <div class="col-6">
                                                     <small class="text-muted d-block">
                                                         <i class="bi bi-people me-1"></i>
-                                                        {{ grupo.participantes_ids.split(',')|length if grupo.participantes_ids else 0 }}
+                                                        {% if grupo.participantes_ids %}
+                                                            {{ grupo.participantes_ids.split(',')|length }}
+                                                        {% else %}
+                                                            0
+                                                        {% endif %}
                                                     </small>
                                                 </div>
                                             </div>
@@ -276,7 +301,11 @@
                                                 </small>
                                                 <small class="text-muted">
                                                     <i class="bi bi-people me-1"></i>
-                                                    {{ grupo.participantes_ids.split(',')|length if grupo.participantes_ids else 0 }} participantes
+                                                    {% if grupo.participantes_ids %}
+                                                        {{ grupo.participantes_ids.split(',')|length }} participantes
+                                                    {% else %}
+                                                        0 participantes
+                                                    {% endif %}
                                                 </small>
                                             </div>
                                         </div>
@@ -325,7 +354,11 @@
                                             <div class="mb-2">
                                                 <small class="text-muted">
                                                     <i class="bi bi-people me-1"></i>
-                                                    {{ grupo.participantes_ids.split(',')|length if grupo.participantes_ids else 0 }} participantes
+                                                    {% if grupo.participantes_ids %}
+                                                        {{ grupo.participantes_ids.split(',')|length }} participantes
+                                                    {% else %}
+                                                        0 participantes
+                                                    {% endif %}
                                                 </small>
                                             </div>
                                             
