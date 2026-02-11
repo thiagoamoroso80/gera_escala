@@ -115,7 +115,7 @@
                         </h5>
                     </div>
                     <div>
-                        <a href="/escalas?username=admin&password={{ request.query_params.get('password', '') }}" 
+                        <a href="/escalas" 
                            class="btn btn-sm btn-light btn-mobile-sm">
                             <i class="bi bi-eye me-1"></i>
                             <span class="d-none d-sm-inline">Ver todas</span>
@@ -158,7 +158,7 @@
                                 <i class="bi bi-calendar-x text-muted" style="font-size: 3rem;"></i>
                             </div>
                             <p class="text-muted mb-3">Nenhuma defumação agendada</p>
-                            <a href="/gerar?username=admin&password={{ request.query_params.get('password', '') }}" 
+                            <a href="/gerar" 
                                class="btn btn-success btn-mobile-sm">
                                 <i class="bi bi-magic me-1"></i> Gerar Escala
                             </a>
@@ -180,7 +180,7 @@
                         </h5>
                     </div>
                     <div>
-                        <a href="/escalas?username=admin&password={{ request.query_params.get('password', '') }}" 
+                        <a href="/escalas" 
                            class="btn btn-sm btn-light btn-mobile-sm">
                             <i class="bi bi-eye me-1"></i>
                             <span class="d-none d-sm-inline">Ver todas</span>
@@ -229,7 +229,7 @@
                                 <i class="bi bi-calendar-x text-muted" style="font-size: 3rem;"></i>
                             </div>
                             <p class="text-muted mb-3">Nenhuma limpeza agendada</p>
-                            <a href="/gerar?username=admin&password={{ request.query_params.get('password', '') }}" 
+                            <a href="/gerar" 
                                class="btn btn-primary btn-mobile-sm">
                                 <i class="bi bi-magic me-1"></i> Gerar Escala
                             </a>
@@ -255,7 +255,7 @@
                     <div class="row g-2">
                         <!-- Gerar Nova Escala -->
                         <div class="col-12 col-sm-6 col-md-3">
-                            <a href="/gerar?username=admin&password={{ request.query_params.get('password', '') }}" 
+                            <a href="/gerar" 
                                class="btn btn-success w-100 h-100 d-flex flex-column justify-content-center align-items-center p-3 btn-action">
                                 <i class="bi bi-magic mb-2" style="font-size: 1.5rem;"></i>
                                 <span class="text-center">
@@ -267,7 +267,7 @@
                         
                         <!-- Adicionar Participante -->
                         <div class="col-12 col-sm-6 col-md-3">
-                            <a href="/participantes?username=admin&password={{ request.query_params.get('password', '') }}" 
+                            <a href="/participantes" 
                                class="btn btn-primary w-100 h-100 d-flex flex-column justify-content-center align-items-center p-3 btn-action">
                                 <i class="bi bi-person-plus mb-2" style="font-size: 1.5rem;"></i>
                                 <span class="text-center">
@@ -279,7 +279,7 @@
                         
                         <!-- Gerenciar Grupos -->
                         <div class="col-12 col-sm-6 col-md-3">
-                            <a href="/grupos?username=admin&password={{ request.query_params.get('password', '') }}" 
+                            <a href="/grupos" 
                                class="btn btn-warning w-100 h-100 d-flex flex-column justify-content-center align-items-center p-3 btn-action">
                                 <i class="bi bi-plus-circle mb-2" style="font-size: 1.5rem;"></i>
                                 <span class="text-center">
@@ -291,7 +291,7 @@
                         
                         <!-- Exportar Dados -->
                         <div class="col-12 col-sm-6 col-md-3">
-                            <a href="/exportar?username=admin&password={{ request.query_params.get('password', '') }}" 
+                            <a href="/exportar" 
                                class="btn btn-info w-100 h-100 d-flex flex-column justify-content-center align-items-center p-3 btn-action">
                                 <i class="bi bi-download mb-2" style="font-size: 1.5rem;"></i>
                                 <span class="text-center">

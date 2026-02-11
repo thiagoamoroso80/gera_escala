@@ -15,7 +15,7 @@
         
         <div class="d-flex flex-column flex-sm-row align-items-start align-items-md-center gap-2">
             {% if is_admin %}
-            <a href="/gerar?username=admin&password={{ request.query_params.get('password', '') }}" 
+            <a href="/gerar" 
                class="btn btn-success btn-mobile-block">
                 <i class="bi bi-magic me-1"></i>
                 <span class="d-none d-sm-inline">Gerar Nova Escala</span>
@@ -158,7 +158,7 @@
                                 {% endif %}
                             </p>
                             {% if is_admin %}
-                            <a href="/gerar?username=admin&password={{ request.query_params.get('password', '') }}" 
+                            <a href="/gerar" 
                                class="btn btn-success btn-mobile-block">
                                 <i class="bi bi-magic me-1"></i> Gerar Escala
                             </a>
@@ -176,7 +176,7 @@
                             Total: {{ escalas_lar|length }} defumações
                         </small>
                         {% if is_admin %}
-                        <a href="/exportar?username=admin&password={{ request.query_params.get('password', '') }}" 
+                        <a href="/exportar" 
                            class="btn btn-sm btn-outline-success">
                             <i class="bi bi-download me-1"></i>
                             <span class="d-none d-sm-inline">Exportar</span>
@@ -309,7 +309,7 @@
                                 {% endif %}
                             </p>
                             {% if is_admin %}
-                            <a href="/gerar?username=admin&password={{ request.query_params.get('password', '') }}" 
+                            <a href="/gerar" 
                                class="btn btn-primary btn-mobile-block">
                                 <i class="bi bi-magic me-1"></i> Gerar Escala
                             </a>
@@ -327,7 +327,7 @@
                             Total: {{ escalas_tenda|length }} limpezas
                         </small>
                         {% if is_admin %}
-                        <a href="/exportar?username=admin&password={{ request.query_params.get('password', '') }}" 
+                        <a href="/exportar" 
                            class="btn btn-sm btn-outline-primary">
                             <i class="bi bi-download me-1"></i>
                             <span class="d-none d-sm-inline">Exportar</span>

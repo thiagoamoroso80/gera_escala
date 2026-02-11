@@ -393,12 +393,12 @@
             <!-- Menu Principal -->
             <h6 class="px-3 text-muted mb-3 text-uppercase small">Menu Principal</h6>
             
-            <a href="/dashboard?username={{ request.query_params.get('username', '') }}&password={{ request.query_params.get('password', '') }}" 
+            <a href="/dashboard" 
                class="nav-link d-block {% if 'dashboard' in request.url.path %}active{% endif %}">
                 <i class="bi bi-speedometer2"></i> Dashboard
             </a>
             
-            <a href="/escalas?username={{ request.query_params.get('username', '') }}&password={{ request.query_params.get('password', '') }}" 
+            <a href="/escalas" 
                class="nav-link d-block {% if 'escalas' in request.url.path and 'gerar' not in request.url.path %}active{% endif %}">
                 <i class="bi bi-calendar3"></i> Escalas
             </a>
@@ -408,22 +408,22 @@
             <hr class="mx-3 my-3">
             <h6 class="px-3 text-muted mb-3 text-uppercase small">Administração</h6>
             
-            <a href="/participantes?username={{ request.query_params.get('username', '') }}&password={{ request.query_params.get('password', '') }}" 
+            <a href="/participantes" 
                class="nav-link d-block {% if 'participantes' in request.url.path %}active{% endif %}">
                 <i class="bi bi-people"></i> Participantes
             </a>
             
-            <a href="/grupos?username={{ request.query_params.get('username', '') }}&password={{ request.query_params.get('password', '') }}" 
+            <a href="/grupos" 
                class="nav-link d-block {% if 'grupos' in request.url.path %}active{% endif %}">
                 <i class="bi bi-collection"></i> Grupos
             </a>
             
-            <a href="/gerar?username={{ request.query_params.get('username', '') }}&password={{ request.query_params.get('password', '') }}" 
+            <a href="/gerar" 
                class="nav-link d-block {% if 'gerar' in request.url.path %}active{% endif %}">
                 <i class="bi bi-magic"></i> Gerar Escala
             </a>
             
-            <a href="/exportar?username={{ request.query_params.get('username', '') }}&password={{ request.query_params.get('password', '') }}" 
+            <a href="/exportar" 
                class="nav-link d-block">
                 <i class="bi bi-download"></i> Exportar
             </a>
@@ -580,6 +580,45 @@
                 body.classList.remove('mobile-view');
             }
         });
+    </script>
+
+    <script>
+    // Garantir que os parâmetros de autenticação sejam mantidos
+    document.addEventListener('DOMContentLoaded', function() {
+        // Verificar se há parâmetros de autenticação na URL atual
+        const urlParams = new URLSearchParams(window.location.search);
+        const username = urlParams.get('username');
+        const password = urlParams.get('password');
+        
+        if (username && password) {
+            console.log('Credenciais encontradas na URL, mantendo...');
+            
+            // Armazenar no localStorage como backup
+            localStorage.setItem('auth_username', username);
+            localStorage.setItem('auth_password', password);
+            
+            // Verificar todos os links na página e adicionar parâmetros se necessário
+            document.querySelectorAll('a[href]').forEach(link => {
+                const href = link.getAttribute('href');
+                // Se for um link interno e não tiver parâmetros de autenticação
+                if (href.startsWith('/') && !href.includes('username=') && !href.includes('password=')) {
+                    const separator = href.includes('?') ? '&' : '?';
+                    link.setAttribute('href', `${href}${separator}username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`);
+                }
+            });
+        } else {
+            // Tentar recuperar do localStorage
+            const storedUsername = localStorage.getItem('auth_username');
+            const storedPassword = localStorage.getItem('auth_password');
+            
+            if (storedUsername && storedPassword) {
+                console.log('Credenciais recuperadas do localStorage');
+                // Redirecionar para a mesma página com os parâmetros
+                const currentUrl = window.location.pathname;
+                window.location.href = `${currentUrl}?username=${encodeURIComponent(storedUsername)}&password=${encodeURIComponent(storedPassword)}`;
+            }
+        }
+    });
     </script>
 </body>
 </html>

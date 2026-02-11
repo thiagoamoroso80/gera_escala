@@ -917,15 +917,12 @@ async def grupos(
 @app.post("/grupos/adicionar/lar")
 async def adicionar_grupo_lar(
     request: Request,
-    username: str = Form(""),
-    password: str = Form(""),
     nome: str = Form(...),
     dia_defumacao: str = Form(...),
-    ordem_rotacao: int = Form(1)
+    ordem_rotacao: int = Form(1),
+    credenciais: dict = Depends(verificar_admin)  # ← Usando dependência
 ):
     """Adiciona grupo Lar"""
-    if username != ADMIN_USER or password != ADMIN_PASS:
-        return RedirectResponse("/")
     
     dados = {
         'nome': nome,
@@ -934,19 +931,16 @@ async def adicionar_grupo_lar(
     }
     
     sistema.adicionar_grupo_lar(dados)
-    return RedirectResponse(f"/grupos?username={username}&password={password}")
+    return RedirectResponse("/grupos", status_code=303)
 
 @app.post("/grupos/adicionar/tenda")
 async def adicionar_grupo_tenda(
     request: Request,
-    username: str = Form(""),
-    password: str = Form(""),
     nome: str = Form(...),
-    dia_preferencial: str = Form("")
+    dia_preferencial: str = Form(""),
+    credenciais: dict = Depends(verificar_admin)  # ← Usando dependência
 ):
     """Adiciona grupo Tenda"""
-    if username != ADMIN_USER or password != ADMIN_PASS:
-        return RedirectResponse("/")
     
     dados = {
         'nome': nome,
@@ -954,7 +948,7 @@ async def adicionar_grupo_tenda(
     }
     
     sistema.adicionar_grupo_tenda(dados)
-    return RedirectResponse(f"/grupos?username={username}&password={password}")
+    return RedirectResponse("/grupos", status_code=303)
 
 # Rotas acessíveis por ambos (viewer e admin)
 @app.get("/escalas", response_class=HTMLResponse)

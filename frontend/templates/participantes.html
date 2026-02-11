@@ -174,8 +174,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
             <form id="formAdicionar" method="post">
-                <input type="hidden" name="username" value="admin">
-                <input type="hidden" name="password" value="{{ request.query_params.get('password', '') }}">
+                <!--<input type="hidden" name="username" value="admin">
+                <input type="hidden" name="password" value="{{ request.query_params.get('password', '') }}">-->
                 
                 <div class="modal-body pt-0">
                     <div class="mb-3">
@@ -249,8 +249,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
             <form id="formEditar" method="post">
-                <input type="hidden" name="username" value="admin">
-                <input type="hidden" name="password" value="{{ request.query_params.get('password', '') }}">
+                <!--<input type="hidden" name="username" value="admin">
+                <input type="hidden" name="password" value="{{ request.query_params.get('password', '') }}">-->
                 <input type="hidden" id="editId" name="id">
                 
                 <div class="modal-body pt-0">
@@ -324,14 +324,32 @@ function mostrarNotificacao(mensagem, tipo = 'success') {
     const notificacao = document.getElementById('notificacao');
     const notificacaoTexto = document.getElementById('notificacaoTexto');
     
+    // Verificar se os elementos existem
+    if (!notificacao || !notificacaoTexto) {
+        console.warn('Elementos de notificação não encontrados');
+        alert(mensagem); // Fallback simples
+        return;
+    }
+
     notificacao.className = `alert alert-${tipo} alert-dismissible fade show mx-3 mx-md-4`;
     notificacaoTexto.textContent = mensagem;
     notificacao.style.display = 'block';
     
+    // Fechar notificações anteriores
+    const bsAlert = bootstrap.Alert.getInstance(notificacao);
+    if (bsAlert) {
+        bsAlert.close();
+    }
+    
+    // Criar nova instância
+    new bootstrap.Alert(notificacao);
+    
     // Auto-fechar após 5 segundos
     setTimeout(() => {
-        const bsAlert = new bootstrap.Alert(notificacao);
-        bsAlert.close();
+        const currentAlert = bootstrap.Alert.getInstance(notificacao);
+        if (currentAlert) {
+            currentAlert.close();
+        }
     }, 5000);
 }
 
@@ -469,8 +487,21 @@ function confirmarExclusao() {
     }
 }
 
-// Função para excluir via AJAX
+// Função para excluir via AJAX (CORRIGIDA)
 async function excluirParticipante(id) {
+    const credenciais = obterCredenciaisDaURL();
+    
+    // Verificar autenticação antes de excluir
+    if (!credenciais.password) {
+        mostrarNotificacao('Sessão expirada. Redirecionando para login...', 'warning');
+        setTimeout(() => {
+            window.location.href = '/';
+        }, 2000);
+        return;
+    }
+    
+    console.log('Excluindo com credenciais:', credenciais);
+    
     try {
         const response = await fetch(`/api/participantes/excluir/${id}`, {
             method: 'POST',
@@ -478,8 +509,8 @@ async function excluirParticipante(id) {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
             body: new URLSearchParams({
-                username: 'admin',
-                password: '{{ request.query_params.get("password", "") }}'
+                username: credenciais.username,
+                password: credenciais.password
             })
         });
         
@@ -507,6 +538,9 @@ async function excluirParticipante(id) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    // NÃO VERIFICAR AUTENTICAÇÃO AO CARREGAR A PÁGINA
+    // Deixe apenas quando for realizar uma ação
+    
     // ========== ADICIONAR PARTICIPANTE (AJAX) ==========
     const formAdicionar = document.getElementById('formAdicionar');
     const btnSalvar = document.getElementById('btnSalvar');
@@ -517,11 +551,30 @@ document.addEventListener('DOMContentLoaded', function() {
         formAdicionar.addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            // Verificar autenticação APENAS quando for salvar
+            const credenciais = obterCredenciaisDaURL();
+            if (!credenciais.password) {
+                mostrarNotificacao('Sessão expirada. Redirecionando para login...', 'warning');
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+                return;
+            }
+            
             // Desabilitar botão e mostrar spinner
             btnSalvar.disabled = true;
             spinnerSalvar.style.display = 'inline-block';
             
             const formData = new FormData(this);
+            
+            // Adicionar credenciais corretas
+            formData.append('username', credenciais.username);
+            formData.append('password', credenciais.password);
+            
+            console.log('Enviando credenciais:', {
+                username: credenciais.username,
+                password: credenciais.password
+            });
             
             try {
                 const response = await fetch('/api/participantes', {
@@ -531,18 +584,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 const data = await response.json();
                 
+                console.log('Resposta da API:', data);
+                
                 if (data.sucesso) {
-                    // Fechar modal
+                    // Fechar modal primeiro
                     const modal = bootstrap.Modal.getInstance(modalAdicionar);
-                    modal.hide();
-                    
-                    // Mostrar notificação
-                    mostrarNotificacao(data.mensagem || 'Participante adicionado com sucesso!');
+                    if (modal) {
+                        modal.hide();
+                    }
                     
                     // Limpar formulário
                     formAdicionar.reset();
                     
-                    // Se a API retornar os dados, adicionar à tabela sem recarregar
+                    // Mostrar notificação
+                    mostrarNotificacao(data.mensagem || 'Participante adicionado com sucesso!');
+                    
+                    // Se a API retornar os dados, adicionar à tabela
                     if (data.participante) {
                         adicionarLinhaTabela(data.participante);
                     } else {
@@ -554,6 +611,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                 } else {
                     mostrarNotificacao(data.erro || 'Erro ao adicionar participante', 'danger');
+                    // Se for erro de credenciais, redirecionar para login
+                    if (data.erro && data.erro.includes('credenciais')) {
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 3000);
+                    }
                 }
             } catch (error) {
                 mostrarNotificacao('Erro de conexão: ' + error.message, 'danger');
@@ -569,16 +632,30 @@ document.addEventListener('DOMContentLoaded', function() {
     const formEditar = document.getElementById('formEditar');
     const btnAtualizar = document.getElementById('btnAtualizar');
     const spinnerAtualizar = document.getElementById('spinnerAtualizar');
-    
+
     if (formEditar) {
         formEditar.addEventListener('submit', async function(e) {
             e.preventDefault();
+            
+            // Verificar autenticação APENAS quando for atualizar
+            const credenciais = obterCredenciaisDaURL();
+            if (!credenciais.password) {
+                mostrarNotificacao('Sessão expirada. Redirecionando para login...', 'warning');
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+                return;
+            }
             
             btnAtualizar.disabled = true;
             spinnerAtualizar.style.display = 'inline-block';
             
             const formData = new FormData(this);
             const id = formData.get('id');
+            
+            // Adicionar credenciais
+            formData.append('username', credenciais.username);
+            formData.append('password', credenciais.password);
             
             try {
                 const response = await fetch(`/api/participantes/atualizar/${id}`, {
@@ -591,7 +668,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.sucesso) {
                     // Fechar modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditar'));
-                    modal.hide();
+                    if (modal) {
+                        modal.hide();
+                    }
                     
                     mostrarNotificacao('Participante atualizado com sucesso!');
                     
@@ -617,10 +696,44 @@ document.addEventListener('DOMContentLoaded', function() {
     // Limpar formulário quando modal é fechado
     if (modalAdicionar) {
         modalAdicionar.addEventListener('hidden.bs.modal', function() {
-            formAdicionar.reset();
+            if (formAdicionar) {
+                formAdicionar.reset();
+            }
         });
     }
+    
+    // Inicializar o elemento de notificação (se existir)
+    const notificacao = document.getElementById('notificacao');
+    if (notificacao) {
+        // Garantir que está escondido inicialmente
+        notificacao.style.display = 'none';
+    }
 });
+
+// Função para obter credenciais da URL (CORRIGIDA)
+function obterCredenciaisDaURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return {
+        username: urlParams.get('username') || 'admin',
+        password: urlParams.get('password') || ''
+    };
+}
+
+// Função para verificar se está autenticado
+function verificarAutenticacao() {
+    const credenciais = obterCredenciaisDaURL();
+    console.log('Credenciais na URL:', credenciais);
+    
+    // Se não tiver senha, mostrar erro MAS só redirecionar em ações que requerem autenticação
+    if (!credenciais.password) {
+        console.warn('Credenciais não encontradas na URL');
+        // Não redirecionar imediatamente, só mostrar alerta
+        // O redirecionamento só acontecerá quando tentar uma ação
+        return false;
+    }
+    return true;
+}
+
 </script>
 {% endblock %}
 [file content end]

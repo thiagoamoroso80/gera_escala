@@ -435,9 +435,11 @@
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
+            <!-- FORMULÁRIO ATUALIZADO: Remover username/password, usar autenticação básica -->
             <form method="post" action="/grupos/adicionar/lar">
+                <!-- REMOVA ESTAS LINHAS: 
                 <input type="hidden" name="username" value="admin">
-                <input type="hidden" name="password" value="{{ request.query_params.get('password', '') }}">
+                <input type="hidden" name="password" value="{{ request.query_params.get('password', '') }}">-->
                 
                 <div class="modal-body">
                     <div class="mb-3">
@@ -495,9 +497,11 @@
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
+            <!-- FORMULÁRIO ATUALIZADO: Remover username/password -->
             <form method="post" action="/grupos/adicionar/tenda">
+                <!-- REMOVA ESTAS LINHAS: 
                 <input type="hidden" name="username" value="admin">
-                <input type="hidden" name="password" value="{{ request.query_params.get('password', '') }}">
+                <input type="hidden" name="password" value="{{ request.query_params.get('password', '') }}"> -->
                 
                 <div class="modal-body">
                     <div class="mb-3">
@@ -963,5 +967,17 @@
         adjustForScreenSize();
         window.addEventListener('resize', adjustForScreenSize);
     });
+
+        document.addEventListener('DOMContentLoaded', function() {
+        // Garantir que os formulários enviem com autenticação básica
+        document.querySelectorAll('form[action*="/grupos/adicionar"]').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                // Não precisamos mais fazer nada especial
+                // A autenticação será feita automaticamente pelo navegador
+                console.log('Enviando formulário de grupo...');
+            });
+        });
+    });
+
 </script>
 {% endblock %}
